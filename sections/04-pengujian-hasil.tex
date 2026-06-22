@@ -1,0 +1,32 @@
+\section{Pengujian dan Hasil Pembahasan}
+\label{sec:pengujian_hasil}
+
+Pengujian dilakukan untuk mengukur keandalan sistem robotika yang telah dirancang. Pengujian mencakup kalibrasi akurasi sensor jarak serta pengujian navigasi pada lintasan uji coba.
+
+\subsection{Pengujian Akurasi Sensor Jarak}
+Pengujian sensor dilakukan dengan membandingkan nilai jarak pembacaan sensor ultrasonik dengan jarak pengukuran manual menggunakan penggaris. Hasil pengujian ditunjukkan pada Tabel~\ref{tab:pengujian_sensor}.
+
+% Contoh penulisan tabel standar profesional (booktabs)
+\begin{table}[H]
+    \centering
+    \caption{Data Pengujian Akurasi Sensor Jarak Ultrasonik HC-SR04.}
+    \label{tab:pengujian_sensor}
+    \begin{tabular}{ccccc}
+        \toprule
+        \textbf{No.} & \textbf{Jarak Aktual (cm)} & \textbf{Jarak Sensor (cm)} & \textbf{Selisih / Error (cm)} & \textbf{Persentase Error (\%)} \\
+        \midrule
+        1  & 10.0 & 10.1 & 0.1 & 1.00 \\
+        2  & 20.0 & 19.8 & 0.2 & 1.00 \\
+        3  & 30.0 & 30.3 & 0.3 & 1.00 \\
+        4  & 40.0 & 39.5 & 0.5 & 1.25 \\
+        5  & 50.0 & 50.2 & 0.2 & 0.40 \\
+        \midrule
+        \multicolumn{4}{l}{\textbf{Rata-rata Error (\%)}} & \textbf{0.93\%} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Berdasarkan Tabel~\ref{tab:pengujian_sensor}, terlihat bahwa sensor ultrasonik memiliki rata-rata error sebesar $0.93\%$, yang mana masih berada di bawah ambang batas toleransi sistem kendali ($5\%$), sehingga sensor dinyatakan layak digunakan untuk sistem navigasi robot.
+
+\subsection{Analisis Pengujian Navigasi}
+Setelah dilakukan kalibrasi sensor, pengujian dilanjutkan dengan mengamati respon robot dalam mendeteksi penghalang di depannya. Robot berhasil mendeteksi dinding penghalang pada jarak $\approx 20$ cm dan melakukan manuver belok kanan secara otomatis untuk menghindari tabrakan. Eksperimen dilakukan sebanyak 10 kali lintasan dengan persentase keberhasilan navigasi sebesar $90\%$.

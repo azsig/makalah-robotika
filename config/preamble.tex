@@ -1,0 +1,84 @@
+% ==============================================================================
+% PREAMBLE & KONFIGURASI PACKAGES
+% ==============================================================================
+
+% Pengaturan Halaman & Margin (A4, standar 4-3-3-3 atau 3-3-3-3 cm)
+\usepackage[a4paper, left=3cm, right=3cm, top=3cm, bottom=3cm]{geometry}
+
+% Dukungan Bahasa & Karakter
+\usepackage[utf8]{inputenc}
+\usepackage[indonesian]{babel} % Menggunakan Bahasa Indonesia untuk penamaan (Gambar, Tabel, Bab)
+
+% Font & Tipografi
+\usepackage{times} % Menggunakan font Times New Roman (standar akademik)
+\usepackage{microtype}
+\usepackage{setspace}
+\onehalfspacing % Spasi 1.5 (standar makalah)
+
+% Grafik & Gambar
+\usepackage{graphicx}
+\usepackage{float} % Memaksa posisi gambar dengan [H]
+\usepackage{caption}
+\usepackage{subcaption}
+\graphicspath{{figures/}} % Lokasi folder gambar
+
+% Tabel
+\usepackage{booktabs} % Garis tabel standar profesional (toprule, midrule, bottomrule)
+\usepackage{multirow}
+\usepackage{array}
+
+% Matematika
+\usepackage{amsmath, amssymb, amsfonts, amsthm}
+
+% Source Code (Kodingan Robot/Data)
+\usepackage{listings}
+\usepackage{xcolor}
+
+% Konfigurasi Tampilan Source Code
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{robotstyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=robotstyle}
+
+% Dukungan Kutipan & Bibliografi (Numeric Style standar)
+\usepackage{csquotes} % Direkomendasikan untuk babel/polyglossia
+\DeclareQuoteAlias{english}{indonesian}
+\usepackage[backend=biber, style=numeric, sorting=none]{biblatex}
+\DeclareLanguageMapping{indonesian}{english}
+\addbibresource{references.bib}
+
+% Hyperlinks (Link aktif untuk daftar isi, gambar, referensi)
+\usepackage{hyperref}
+\hypersetup{
+    hypertexnames=false,
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=magenta,      
+    urlcolor=blue,
+    pdftitle={Makalah UAS ISR},
+    pdfpagemode=FullScreen,
+}
+
+% Pengaturan Paragraf & Indentasi
+\setlength{\parindent}{1cm}
+\setlength{\parskip}{0.2cm}

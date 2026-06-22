@@ -1,0 +1,18 @@
+\section{Tinjauan Pustaka}
+\label{sec:tinjauan_pustaka}
+
+Bagian ini memaparkan teori dasar yang mendukung pengerjaan proyek robotika ini. Teori-teori ini mencakup sensor yang digunakan, sistem kendali, serta algoritma kecerdasan buatan yang ditanamkan pada robot.
+
+\subsection{Sistem Kendali Robot (Intelligent Controls)}
+Sistem kontrol pada robot sering menggunakan algoritma seperti Proportional-Integral-Derivative (PID), Fuzzy Logic, atau kecerdasan buatan lainnya. Kontrol cerdas ini memungkinkan robot untuk mengambil keputusan secara dinamis berdasarkan data sensor secara real-time.
+
+\subsection{Sensor Jarak dan Penginderaan Lingkungan}
+Untuk menavigasi lingkungan, robot dilengkapi dengan sensor jarak seperti Ultrasonik (HC-SR04), LiDAR, atau kamera. Persamaan dasar perhitungan jarak pada sensor ultrasonik adalah:
+\begin{equation}
+    s = \frac{v \times t}{2}
+    \label{eq:ultrasonic}
+\end{equation}
+di mana $s$ adalah jarak objek (meter), $v$ adalah kecepatan rambat suara di udara ($\approx 340$ m/s), dan $t$ adalah waktu tempuh gelombang pantul (detik).
+
+\subsection{Platform Mikrokontroler / Single Board Computer}
+Robot ini menggunakan platform mikrokontroler [tuliskan nama board, misal: Arduino Uno, ESP32, Raspberry Pi, Jetson Nano] sebagai unit pemroses utama. Unit ini bertugas membaca data input dari sensor, melakukan pemrosesan algoritma navigasi, dan memberikan sinyal kendali PWM (Pulse Width Modulation) ke driver motor.

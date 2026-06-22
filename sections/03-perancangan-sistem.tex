@@ -1,0 +1,77 @@
+\section{Perancangan Sistem}
+\label{sec:perancangan_sistem}
+
+Pada bab ini dijelaskan arsitektur perancangan sistem robotika secara menyeluruh, yang terbagi menjadi perancangan perangkat keras (hardware), perancangan perangkat lunak (software/flowchart), dan implementasi kode program.
+
+\subsection{Arsitektur Perangkat Keras}
+Robot ini terdiri dari komponen mekanik sasis, aktuator berupa motor DC dengan driver motor L298N, sensor jarak HC-SR04, dan unit pengendali Arduino Uno. Diagram blok sistem perangkat keras dapat dilihat pada Gambar~\ref{fig:block_diagram}.
+
+% Contoh penulisan gambar (Ganti nama file gambar dengan yang ada di folder figures)
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.7\textwidth]{diagram_blok.png} % Hapus tanda persen (%) jika file sudah ada
+    \framebox[10cm]{\parbox[t][4cm]{9.5cm}{\vfill\centering [Masukkan Diagram Blok Hardware / Foto Robot di sini]\vfill}} % Placeholder sementara
+    \caption{Diagram Blok Arsitektur Perangkat Keras Robot.}
+    \label{fig:block_diagram}
+\end{figure}
+
+\subsection{Foto Fisik Robot}
+Dokumentasi foto robot yang telah dirakit diletakkan pada Gambar~\ref{fig:foto_robot}. Letakkan file foto robot Anda di dalam folder \texttt{figures/}.
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.6\textwidth]{foto_robot.jpg} % Hapus tanda persen (%) jika file sudah ada
+    \framebox[10cm]{\parbox[t][6cm]{9.5cm}{\vfill\centering [Tempatkan Foto Robot Anda di sini / Simpan file di folder figures]\vfill}} % Placeholder sementara
+    \caption{Dokumentasi Fisik Robot Hasil Perakitan Kelompok.}
+    \label{fig:foto_robot}
+\end{figure}
+
+\subsection{Perancangan Perangkat Lunak}
+Sistem kendali navigasi robot didesain menggunakan algoritma sederhana dengan alur logika seperti ditunjukkan oleh potongan kode program berikut.
+
+% Contoh Penulisan Kode Program (Kodingan Robot)
+Berikut adalah potongan kode pemrograman Arduino untuk membaca sensor jarak ultrasonik dan mengontrol arah gerak robot:
+
+\begin{lstlisting}[language=C++, caption={Kode Program Kontrol Motor Berdasarkan Sensor Jarak}, label={lst:arduino_code}]
+// Pin Definition
+const int trigPin = 9;
+const int echoPin = 10;
+const int motorPin1 = 5;
+const int motorPin2 = 6;
+
+void setup() {
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  pinMode(motorPin1, OUTPUT);
+  pinMode(motorPin2, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  long duration;
+  int distance;
+  
+  // Ultrasonic Sensor Read
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  
+  duration = pulseIn(echoPin, HIGH);
+  distance = duration * 0.034 / 2;
+  
+  // Navigation Logic
+  if (distance < 20) {
+    // Obstacle detected, turn right
+    digitalWrite(motorPin1, LOW);
+    digitalWrite(motorPin2, HIGH);
+  } else {
+    // Path is clear, move forward
+    digitalWrite(motorPin1, HIGH);
+    digitalWrite(motorPin2, LOW);
+  }
+  delay(100);
+}
+\end{lstlisting}
+Bagian kode di atas merepresentasikan implementasi kontrol kemudi otomatis robot berbasis deteksi halangan di depan (obstacle avoidance).

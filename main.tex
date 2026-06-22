@@ -1,0 +1,94 @@
+% ==============================================================================
+% DOKUMEN UTAMA (MAIN.TEX) - Dibuat Modular
+% ==============================================================================
+
+\documentclass[12pt, a4paper]{article}
+
+% Load Preamble & Metadata
+\input{config/preamble}
+\input{config/metadata}
+
+\begin{document}
+
+% ==============================================================================
+% COVER PAGE (HALAMAN JUDUL)
+% ==============================================================================
+\begin{titlepage}
+    \centering
+    
+    % Judul Makalah (Bold, All Caps, Ukuran Besar)
+    {\setstretch{1.3}
+    {\large \textbf{LAPORAN TUGAS AKHIR UAS}}\\[0.5cm]
+    {\Large \textbf{\JudulMakalah}}\\[1.5cm]
+    }
+    
+    % Logo Universitas (Jika ada file logo.png / logo.jpg di folder figures)
+    % \includegraphics[width=4cm]{logo.png}\\[1.5cm]
+    % Jika belum ada, gunakan box placeholder di bawah ini:
+    \framebox[5cm]{\parbox[t][3.5cm]{4.5cm}{\vfill\centering [LOGO KAMPUS]\\[0.2cm] (Simpan file logo.png di folder figures/ lalu hapus box ini)\vfill}}\\[1.5cm]
+    
+    % Keterangan Anggota Kelompok (Sesuai dengan permintaan UAS)
+    \textbf{Disusun Oleh (Kelompok UAS):}\\[0.4cm]
+    \begin{table}[h!]
+        \centering
+        \begin{tabular}{rcc}
+            \textbf{Nama} & & \textbf{NIM} \\
+            \midrule
+            \AnggotaSatu & --- & \NIMSatu \\
+            \AnggotaDua   & --- & \NIMDua \\
+            \AnggotaTiga  & --- & \NIMTiga \\
+            \AnggotaEmpat & --- & \NIMEmpat \\
+        \end{tabular}
+    \end{table}
+    \vspace{1cm}
+    
+    % Detail Institusi & Kelas
+    {\large
+    \textbf{Dosen Pengampu: \DosenPengampu}\\[1cm]
+    \textbf{\MataKuliah}\\[0.3cm]
+    \ProgramStudi\\[0.2cm]
+    \Fakultas\\[0.2cm]
+    \Universitas\\[0.2cm]
+    Tahun \TahunAkademik
+    }
+    
+\end{titlepage}
+
+% ==============================================================================
+% HALAMAN DAFTAR ISI & PENGANTAR
+% ==============================================================================
+\pagenumbering{roman} % Nomor halaman romawi untuk daftar isi
+
+\newpage
+\tableofcontents
+\newpage
+\listoffigures
+\listoftables
+
+\newpage
+\pagenumbering{arabic} % Kembali ke penomoran angka standar untuk isi bab
+
+% ==============================================================================
+% KONTEN UTAMA (MODULAR SECTIONS)
+% ==============================================================================
+\input{sections/01-pendahuluan}
+\newpage
+
+\input{sections/02-tinjauan-pustaka}
+\newpage
+
+\input{sections/03-perancangan-sistem}
+\newpage
+
+\input{sections/04-pengujian-hasil}
+\newpage
+
+\input{sections/05-kesimpulan-saran}
+\newpage
+
+% ==============================================================================
+% REFERENSI / BIBLIOGRAFI
+% ==============================================================================
+\printbibliography[title={Daftar Pustaka}]
+
+\end{document}

@@ -1,0 +1,20 @@
+\babel@toc {indonesian}{}\relax 
+\contentsline {section}{\numberline {1}Pendahuluan}{1}{section.5}%
+\contentsline {subsection}{\numberline {1.1}Latar Belakang}{1}{subsection.6}%
+\contentsline {subsection}{\numberline {1.2}Rumusan Masalah}{1}{subsection.7}%
+\contentsline {subsection}{\numberline {1.3}Tujuan Penelitian}{1}{subsection.11}%
+\contentsline {subsection}{\numberline {1.4}Manfaat Penelitian}{1}{subsection.15}%
+\contentsline {section}{\numberline {2}Tinjauan Pustaka}{3}{section.16}%
+\contentsline {subsection}{\numberline {2.1}Sistem Kendali Robot (Intelligent Controls)}{3}{subsection.17}%
+\contentsline {subsection}{\numberline {2.2}Sensor Jarak dan Penginderaan Lingkungan}{3}{subsection.18}%
+\contentsline {subsection}{\numberline {2.3}Platform Mikrokontroler / Single Board Computer}{3}{subsection.20}%
+\contentsline {section}{\numberline {3}Perancangan Sistem}{4}{section.21}%
+\contentsline {subsection}{\numberline {3.1}Arsitektur Perangkat Keras}{4}{subsection.22}%
+\contentsline {subsection}{\numberline {3.2}Foto Fisik Robot}{4}{subsection.24}%
+\contentsline {subsection}{\numberline {3.3}Perancangan Perangkat Lunak}{5}{subsection.26}%
+\contentsline {section}{\numberline {4}Pengujian dan Hasil Pembahasan}{7}{section.68}%
+\contentsline {subsection}{\numberline {4.1}Pengujian Akurasi Sensor Jarak}{7}{subsection.69}%
+\contentsline {subsection}{\numberline {4.2}Analisis Pengujian Navigasi}{7}{subsection.71}%
+\contentsline {section}{\numberline {5}Kesimpulan dan Saran}{8}{section.72}%
+\contentsline {subsection}{\numberline {5.1}Kesimpulan}{8}{subsection.73}%
+\contentsline {subsection}{\numberline {5.2}Saran}{8}{subsection.77}%
