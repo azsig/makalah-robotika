@@ -25,15 +25,318 @@ Dokumentasi foto robot yang telah dirakit diletakkan pada Gambar~\ref{fig:foto_r
 \end{figure}
 
 \subsection{Perancangan Sistem Visual (Visual)}
-Perancangan subsistem visual berfokus pada pemrosesan citra digital yang ditangkap oleh USB Webcam secara real-time. Webcam diposisikan di bagian depan robot untuk menangkap kondisi lingkungan. Sinyal video dari webcam diproses oleh modul pemrosesan citra (Visi Komputer) yang dikembangkan terpisah dan dijalankan sebagai layanan web server lokal berbasis Flask API pada alamat URL \texttt{http://127.0.0.1:5000/api/objects}.
+Perancangan subsistem visual berfokus pada pemrosesan citra digital yang ditangkap oleh USB Webcam secara real-time. Kamera diposisikan di bagian depan robot untuk menangkap kondisi lingkungan secara langsung. Alur pemrosesan sistem visual ini terbagi menjadi empat tahap utama: akuisisi citra, prapemrosesan dan segmentasi warna (masking), deteksi kontur objek, serta estimasi jarak visual.
 
-Layanan Flask API ini mengekstraksi frame gambar, melakukan segmentasi atau deteksi objek, dan membagi objek yang terdeteksi ke dalam dua kategori label utama, yaitu:
+\subsubsection{Akuisisi Citra dan Manajemen Kamera (\textit{camera\_manager.py})}
+Citra mentah diperoleh menggunakan USB Webcam dengan resolusi native $320 \times 240$ piksel. Format penangkapan video disetel menggunakan kompresi MJPG (\textit{Motion JPEG}) melalui driver V4L2 (\textit{Video for Linux 2}) guna meminimalkan penggunaan bandwidth USB dan beban pemrosesan pada Raspberry Pi. 
+
+Untuk menghindari hambatan (\textit{bottleneck}) pada jalannya program utama, proses pembacaan frame kamera diisolasi ke dalam utas latar belakang (\textit{background thread}) tersendiri yang berjalan secara asinkron dengan jeda waktu tunggu (sleep) sebesar $0.03$ detik antar pengambilan frame. Hal ini menjamin tersedianya frame terbaru yang siap diakses setiap saat oleh modul pemrosesan citra tanpa memblokir thread eksekusi utama. Kode implementasi manajemen kamera dapat dilihat pada Kode Program~\ref{lst:camera_manager}.
+
+\begin{lstlisting}[language=Python, caption={Kode Program Modul Manajemen Kamera (camera\_manager.py)}, label={lst:camera_manager}]
+import cv2
+import threading
+import time
+import numpy as np
+
+class CameraManager:
+    def __init__(self, src=0):
+        self.src = src
+        # Gunakan backend V4L2 yang jauh lebih stabil di Raspberry Pi/Linux
+        self.stream = cv2.VideoCapture(self.src, cv2.CAP_V4L2)
+        
+        # Set format ke MJPG untuk menghemat bandwidth USB di Raspberry Pi
+        self.stream.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
+        self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
+        self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+        
+        self.grabbed = False
+        # Inisialisasi dengan frame hitam agar tidak None
+        self.frame = np.zeros((240, 320, 3), dtype=np.uint8)
+        self.stopped = False
+        
+        if self.stream.isOpened():
+            print(f"[CAM] Kamera {self.src} terdeteksi.")
+            # Ambil satu frame awal secara sinkron
+            self.grabbed, self.frame = self.stream.read()
+        else:
+            print(f"[CAM] [ERROR] Kamera {self.src} tidak ditemukan!")
+
+    def start(self):
+        # Jalankan pembacaan frame di background thread
+        threading.Thread(target=self.update, args=(), daemon=True).start()
+        return self
+
+    def update(self):
+        while not self.stopped:
+            if not self.stream.isOpened():
+                break
+            self.grabbed, self.frame = self.stream.read()
+            # Jeda kecil agar tidak membebani CPU
+            time.sleep(0.03)
+
+    def read(self):
+        return self.frame
+
+    def stop(self):
+        self.stopped = True
+        self.stream.release()
+
+    def switch_source(self, new_src):
+        """Mengganti input kamera secara dinamis"""
+        self.stopped = True
+        time.sleep(0.1)  # Beri jeda kecil agar thread update selesai
+        self.stream.release()
+        
+        self.src = new_src
+        self.stream = cv2.VideoCapture(self.src, cv2.CAP_V4L2)
+        self.stream.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
+        self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
+        self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+        
+        self.grabbed = False
+        self.frame = np.zeros((240, 320, 3), dtype=np.uint8)
+        self.stopped = False
+        
+        if self.stream.isOpened():
+            print(f"[CAM] Berhasil beralih ke Kamera {self.src}")
+            self.grabbed, self.frame = self.stream.read()
+            self.start()
+            return True
+        else:
+            print(f"[CAM] [ERROR] Gagal membuka Kamera {self.src}")
+            # Nyalakan thread update kembali agar program tidak macet
+            self.start()
+            return False
+\end{lstlisting}
+
+\subsubsection{Prapemrosesan dan Segmentasi Warna (\textit{image\_processor.py})}
+Sebelum dilakukan segmentasi warna, frame citra yang bertipe BGR (\textit{Blue-Green-Red}) terlebih dahulu disaring menggunakan filter Gaussian Blur dengan ukuran kernel $11 \times 11$ piksel. Proses ini bertujuan untuk mereduksi derau (\textit{noise}) frekuensi tinggi dan menghaluskan tepi objek. Selanjutnya, ruang warna citra dikonversi dari BGR menjadi HSV (\textit{Hue, Saturation, Value}) karena ruang warna HSV lebih stabil terhadap fluktuasi intensitas cahaya lingkungan.
+
+Segmentasi objek pada modul pemrosesan citra dilakukan dengan membagi hasil thresholding warna ke dalam dua masker biner utama:
 \begin{enumerate}
-    \item \textbf{TARGET}: Representasi objek tujuan yang harus dikejar oleh robot (misalnya bola berwarna atau penanda jalur khusus).
-    \item \textbf{OBSTACLE}: Representasi rintangan visual di depan robot yang harus dihindari secara visual sebelum terlalu dekat secara fisik.
+    \item \textbf{Masker Target (\textit{mask\_target}):} Masker ini memisahkan warna target berdasarkan nilai ambang batas (\textit{threshold}) warna HSV yang telah dikalibrasi sebelumnya. Rentang nilai threshold didefinisikan sebagai batas bawah ($HSV_{\text{lower}}$) dan batas atas ($HSV_{\text{upper}}$). Untuk menghilangkan noise piksel biner kecil yang terisolasi, diterapkan operasi morfologi berupa erosi (\textit{erode}) sebanyak 2 iterasi, diikuti dengan dilasi (\textit{dilate}) sebanyak 2 iterasi.
+    \item \textbf{Masker Warna Tajam (\textit{mask\_colorful}):} Masker ini digunakan untuk mendeteksi semua objek di lingkungan yang memiliki saturasi warna yang tajam (seperti kertas origami atau penanda fisik lainnya). Parameter ambang batas bawah ditentukan pada nilai $HSV = [0, 100, 80]$ dan batas atas pada $HSV = [180, 255, 255]$.
+    \item \textbf{Masker Rintangan (\textit{mask\_obstacle}):} Benda dianggap sebagai rintangan (\textit{obstacle}) jika memiliki karakteristik warna yang tajam tetapi warnanya bukan merupakan warna target. Masker rintangan diperoleh melalui operasi logika \textit{bitwise} AND antara masker warna tajam dengan negasi dari masker target:
+    \begin{equation}
+        \text{mask\_obstacle} = \text{mask\_colorful} \land \neg(\text{mask\_target})
+        \label{eq:bitwise_obstacle}
+    \end{equation}
+\end{enumerate}
+Kode implementasi segmentasi warna dapat dilihat pada Kode Program~\ref{lst:image_processor}.
+
+\begin{lstlisting}[language=Python, caption={Kode Program Modul Pemroses Citra (image\_processor.py)}, label={lst:image_processor}]
+import cv2
+import numpy as np
+
+class ImageProcessor:
+    def process_masks(self, frame, lower_color, upper_color):
+        blurred = cv2.GaussianBlur(frame, (11, 11), 0)
+        hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
+        
+        # 1. Masker untuk Target (Sesuai dengan warna klik pengguna)
+        mask_target = cv2.inRange(hsv, lower_color, upper_color)
+        mask_target = cv2.erode(mask_target, None, iterations=2)
+        mask_target = cv2.dilate(mask_target, None, iterations=2)
+        
+        # 2. Masker untuk Benda Berwarna Tajam (Kertas origami/binder)
+        # Kertas warna-warni biasanya memiliki nilai Saturation dan Value tinggi (> 100)
+        lower_colorful = np.array([0, 100, 80])
+        upper_colorful = np.array([180, 255, 255])
+        mask_colorful = cv2.inRange(hsv, lower_colorful, upper_colorful)
+        
+        mask_colorful = cv2.erode(mask_colorful, None, iterations=2)
+        mask_colorful = cv2.dilate(mask_colorful, None, iterations=2)
+        
+        # 3. Masker Obstacle
+        # Benda dianggap Pengecoh JIKA warnanya tajam, TAPI BUKAN merupakan warna target
+        mask_obstacle = cv2.bitwise_and(mask_colorful, cv2.bitwise_not(mask_target))
+        
+        return mask_target, mask_obstacle
+\end{lstlisting}
+
+\subsubsection{Deteksi Kontur Objek (\textit{object\_detector.py})}
+Setelah masker biner (\textit{mask\_target} dan \textit{mask\_obstacle}) terbentuk, koordinat fisik dan dimensi objek diidentifikasi menggunakan algoritma pencarian kontur eksternal (\texttt{cv2.findContours} dengan metode aproksimasi \texttt{CHAIN\_APPROX\_SIMPLE}). Kontur-kontur yang ditemukan disaring berdasarkan luas area pikselnya. Kontur dengan luas area yang kurang dari ambang batas minimum (\texttt{min\_area} = 500 piksel) akan diabaikan guna menyaring partikel debu atau noise minor di latar belakang.
+
+Setiap kontur valid yang lolos penyaringan dilingkupi dengan kotak pembatas tegak (\textit{Bounding Box}) berupa parameter koordinat piksel kiri atas ($x, y$) serta dimensi lebar ($w$) dan tinggi ($h$) menggunakan fungsi \texttt{cv2.boundingRect}. Daftar objek terdeteksi kemudian diurutkan berdasarkan ukuran luas area bounding box ($w \times h$) secara menurun (\textit{descending}) agar objek terbesar selalu menempati indeks pertama. Kode implementasi deteksi objek dapat dilihat pada Kode Program~\ref{lst:object_detector}.
+
+\begin{lstlisting}[language=Python, caption={Kode Program Modul Detektor Objek (object\_detector.py)}, label={lst:object_detector}]
+import cv2
+
+class ObjectDetector:
+    def __init__(self, min_area=500):
+        # min_area adalah ukuran minimal piksel agar benda tidak dianggap sebagai debu/noise
+        self.min_area = min_area
+
+    def find_objects(self, mask):
+        # Cari kontur (garis luar benda putih) pada masker
+        contours, _ = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        valid_objects = []
+        for contour in contours:
+            area = cv2.contourArea(contour)
+            # Abaikan objek yang terlalu kecil
+            if area > self.min_area:
+                # Dapatkan koordinat x, y, lebar (w), dan tinggi (h)
+                x, y, w, h = cv2.boundingRect(contour)
+                valid_objects.append((x, y, w, h))
+                
+        # Urutkan objek berdasarkan luas bounding box (terbesar ke terkecil)
+        valid_objects = sorted(valid_objects, key=lambda obj: obj[2] * obj[3], reverse=True)
+        return valid_objects
+\end{lstlisting}
+
+\subsubsection{Estimasi Jarak Visual (\textit{distance\_estimator.py})}
+Sistem visi juga dilengkapi dengan kemampuan mengestimasi jarak fisik objek dari kamera memanfaatkan model proyeksi perspektif kamera lubang jarum (\textit{pinhole camera model}). Hubungan antara ukuran piksel objek pada sensor kamera dengan jarak fisiknya bersifat berbanding terbalik. Jarak fisik objek ($D$) diestimasi menggunakan persamaan matematika berikut:
+\begin{equation}
+    D = \frac{W_{\text{ref}} \times D_{\text{ref}}}{w}
+    \label{eq:distance_estimation}
+\end{equation}
+di mana:
+\begin{itemize}
+    \item $D$ adalah estimasi jarak fisik objek dari kamera saat ini (dalam cm).
+    \item $W_{\text{ref}}$ adalah lebar objek referensi dalam satuan piksel pada gambar saat proses kalibrasi dilakukan.
+    \item $D_{\text{ref}}$ adalah jarak fisik nyata referensi dari kamera ke objek saat proses kalibrasi dilakukan (dalam cm).
+    \item $w$ adalah dimensi lebar bounding box objek dalam satuan piksel pada frame saat ini.
+\end{itemize}
+Nilai kalibrasi awal berupa $W_{\text{ref}}$ dan $D_{\text{ref}}$ disimpan secara persisten ke dalam berkas konfigurasi \texttt{kalibrasi\_jarak.txt} sehingga sistem dapat langsung menggunakannya ketika dijalankan kembali. Kode implementasi estimasi jarak dapat dilihat pada Kode Program~\ref{lst:distance_estimator}.
+
+\begin{lstlisting}[language=Python, caption={Kode Program Modul Estimasi Jarak (distance\_estimator.py)}, label={lst:distance_estimator}]
+import os
+
+class DistanceEstimator:
+    def __init__(self, file_path="kalibrasi_jarak.txt"):
+        self.file_path = file_path
+        self.reference_pixel_width = 0.0
+        self.known_distance = 0.0
+        self.is_calibrated = False
+        self.load_calibration()
+
+    def load_calibration(self):
+        if os.path.exists(self.file_path):
+            try:
+                with open(self.file_path, "r") as f:
+                    lines = f.readlines()
+                    if len(lines) >= 2:
+                        self.reference_pixel_width = float(lines[0].strip())
+                        self.known_distance = float(lines[1].strip())
+                        self.is_calibrated = True
+                        print(f"[JARAK] Kalibrasi dimuat: {self.reference_pixel_width}px pada {self.known_distance}cm")
+            except Exception as e:
+                print(f"[JARAK] Gagal memuat file kalibrasi: {e}")
+
+    def calibrate(self, known_distance, pixel_width):
+        if known_distance > 0 and pixel_width > 0:
+            self.reference_pixel_width = pixel_width
+            self.known_distance = known_distance
+            self.is_calibrated = True
+            try:
+                with open(self.file_path, "w") as f:
+                    f.write(f"{pixel_width}\n{known_distance}\n")
+                print(f"[JARAK] Kalibrasi disimpan: {pixel_width}px pada {known_distance}cm")
+            except Exception as e:
+                print(f"[JARAK] Gagal menyimpan file kalibrasi: {e}")
+            return True
+        return False
+
+    def estimate_distance(self, pixel_width):
+        if not self.is_calibrated or pixel_width <= 0:
+            return 0.0
+            
+        # Rumus Jarak yang disederhanakan: D_baru = (Piksel_Awal * Jarak_Awal) / Piksel_Baru
+        distance = (self.reference_pixel_width * self.known_distance) / pixel_width
+        return round(distance, 1)
+\end{lstlisting}
+
+\subsubsection{Integrasi dan Kalibrasi Layanan (\textit{calibration\_service.py} \& \textit{stream\_service.py})}
+Sistem visual ini berjalan sebagai layanan web server lokal berbasis Flask API pada alamat URL \texttt{http://127.0.0.1:5000}. Layanan ini memfasilitasi interaksi pengguna untuk menentukan dan memilih objek target secara dinamis menggunakan antarmuka web.
+
+Mekanisme pemilihan target dilakukan dengan cara berikut:
+\begin{enumerate}
+    \item \textbf{Mode Discovery (Inisialisasi):} Pada mode awal ini, sistem belum mengunci warna target tertentu. Umpan kamera menampilkan tulisan panduan agar pengguna mengklik tepat pada objek target di layar.
+    \item \textbf{Pengambilan Sampel Warna (Klik Pengguna):} Ketika pengguna mengklik koordinat piksel $(x, y)$ objek target di web browser, koordinat tersebut dikirimkan ke web API server melalui request POST ke endpoint \texttt{/api/calibrate-color}. Layanan \texttt{CalibrationService} kemudian mengambil area ROI (\textit{Region of Interest}) berukuran $10 \times 10$ piksel di sekeliling titik koordinat tersebut pada frame HSV saat itu.
+    \item \textbf{Kalkulasi Toleransi HSV:} Nilai rata-rata Hue ($H_{\text{avg}}$), Saturation ($S_{\text{avg}}$), dan Value ($V_{\text{avg}}$) dari ROI dihitung dan diberi batas toleransi agar deteksi tetap stabil di bawah variasi pencahayaan:
+    \begin{equation}
+        H_{\text{lower/upper}} = H_{\text{avg}} \pm 15, \quad S_{\text{lower/upper}} = S_{\text{avg}} \pm 60, \quad V_{\text{lower/upper}} = V_{\text{avg}} \pm 60
+    \end{equation}
+    Batas toleransi ini secara otomatis disimpan sebagai parameter filter warna target aktif.
+    \item \textbf{Mode Tracking (Pelacakan):} Setelah warna target berhasil dikalibrasi, sistem beralih dari \textbf{Mode Discovery} ke \textbf{Mode Tracking} untuk melacak pergerakan target dan rintangan berdasarkan masker warna tersebut.
 \end{enumerate}
 
-Data hasil pemrosesan citra dikembalikan dalam format JSON yang berisi koordinat bounding box setiap objek. Parameter penting yang digunakan oleh sistem navigasi adalah koordinat tengah sumbu-x objek ($x_{\text{objek}}$) untuk menentukan deviasi arah, serta ukuran dimensi lebar ($w$) dan tinggi ($h$) bounding box untuk menghitung luas area objek ($A = w \times h$) sebagai indikator jarak visual objek dari kamera.
+Kode implementasi dari layanan kalibrasi warna dan deteksi ini dapat dilihat pada Kode Program~\ref{lst:calibration_service}.
+
+\begin{lstlisting}[language=Python, caption={Kode Program Layanan Kalibrasi Warna Target (calibration\_service.py)}, label={lst:calibration_service}]
+import numpy as np
+import cv2
+from robot_vision_module.distance_estimator import DistanceEstimator
+
+class CalibrationService:
+    def __init__(self):
+        self.mode = "DISCOVERY" # Mode awal adalah mencari benda apapun
+        self.target_lower = np.array([0, 0, 0])
+        self.target_upper = np.array([180, 255, 255])
+        self.is_calibrated = False
+        self.last_discovery_objects = []
+        
+        self.distance_estimator = DistanceEstimator()
+        self.last_target_bbox = None
+        self.latest_objects_data = []
+
+    def calibrate_color(self, frame, x, y):
+        h, w = frame.shape[:2]
+        if x < 0 or x >= w or y < 0 or y >= h:
+            return False
+
+        # Ambil sampel dari area kecil di sekitar titik klik (agar lebih representatif)
+        y_min, y_max = max(0, y-5), min(h, y+5)
+        x_min, x_max = max(0, x-5), min(w, x+5)
+        roi = frame[y_min:y_max, x_min:x_max]
+        
+        hsv_roi = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+        
+        # Rata-rata warna
+        if hsv_roi.size > 0:
+            avg_hsv = np.average(np.average(hsv_roi, axis=0), axis=0)
+        else:
+            return False
+            
+        hue, sat, val = avg_hsv[0], avg_hsv[1], avg_hsv[2]
+        
+        # Toleransi
+        lower_hue = max(0, hue - 15)
+        upper_hue = min(180, hue + 15)
+        
+        lower_sat = max(50, sat - 60) 
+        upper_sat = min(255, sat + 60)
+        
+        lower_val = max(50, val - 60) 
+        upper_val = min(255, val + 60)
+
+        self.target_lower = np.array([lower_hue, lower_sat, lower_val])
+        self.target_upper = np.array([upper_hue, upper_sat, upper_val])
+        self.mode = "TRACKING"
+        self.is_calibrated = True
+
+        print(f"[KALIBRASI] Klik ({x}, {y}) | AVG HSV: {avg_hsv}")
+        return True
+
+    def calibrate_distance(self, known_distance):
+        if self.last_target_bbox is not None:
+            _, _, w, _ = self.last_target_bbox
+            success = self.distance_estimator.calibrate(known_distance, w)
+            if success:
+                print(f"[KALIBRASI JARAK] Berhasil! Piksel {w}px = {known_distance}cm")
+            return success
+        return False
+        
+    def reset_mode(self):
+        self.mode = "DISCOVERY"
+\end{lstlisting}
+
+Layanan API web Flask ini mengekspos endpoint-endpoint fungsional utama berikut:
+\begin{itemize}
+    \item \texttt{/video\_feed}: Mengalirkan umpan video (\textit{video stream}) beranotasi bounding box secara real-time ke antarmuka pengguna berbasis web menggunakan format \textit{Multipart JPEG} (MJPEG) yang disuplai oleh \texttt{stream\_service.py}.
+    \item \texttt{/api/objects}: Mengembalikan data koordinat tengah sumbu-x target ($x_{\text{target}}$) dan rintangan visual, bounding box, serta hasil estimasi jarak visual dalam format JSON untuk diakses oleh script kemudi utama robot.
+\end{itemize}
 
 \subsection{Perancangan Logika Kontrol dan Navigasi (Logic)}
 Bagian perancangan logika kontrol merupakan pusat pengambilan keputusan robot berbasis Raspberry Pi. Logika navigasi dirancang menggunakan bahasa pemrograman Python 3 dengan struktur modular yang terdiri dari tiga berkas program utama: \texttt{motor\_manager.py}, \texttt{ultrasonic\_manager.py}, dan \texttt{navigator.py}. Diagram alir atau arsitektur modular perangkat lunak navigasi ini diintegrasikan dalam satu kesatuan sistem otonom.
