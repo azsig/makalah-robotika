@@ -9,12 +9,17 @@
 \contentsline {subsection}{\numberline {2.2}Sensor Jarak dan Penginderaan Lingkungan}{3}{subsection.18}%
 \contentsline {subsection}{\numberline {2.3}Platform Mikrokontroler / Single Board Computer}{3}{subsection.20}%
 \contentsline {section}{\numberline {3}Perancangan Sistem}{4}{section.21}%
-\contentsline {subsection}{\numberline {3.1}Arsitektur Perangkat Keras}{4}{subsection.22}%
-\contentsline {subsection}{\numberline {3.2}Foto Fisik Robot}{4}{subsection.24}%
-\contentsline {subsection}{\numberline {3.3}Perancangan Perangkat Lunak}{5}{subsection.26}%
-\contentsline {section}{\numberline {4}Pengujian dan Hasil Pembahasan}{7}{section.68}%
-\contentsline {subsection}{\numberline {4.1}Pengujian Akurasi Sensor Jarak}{7}{subsection.69}%
-\contentsline {subsection}{\numberline {4.2}Analisis Pengujian Navigasi}{7}{subsection.71}%
-\contentsline {section}{\numberline {5}Kesimpulan dan Saran}{8}{section.72}%
-\contentsline {subsection}{\numberline {5.1}Kesimpulan}{8}{subsection.73}%
-\contentsline {subsection}{\numberline {5.2}Saran}{8}{subsection.77}%
+\contentsline {subsection}{\numberline {3.1}Perancangan Perangkat Keras (Hardware)}{4}{subsection.22}%
+\contentsline {subsection}{\numberline {3.2}Perancangan Sistem Visual (Visual)}{5}{subsection.25}%
+\contentsline {subsection}{\numberline {3.3}Perancangan Logika Kontrol dan Navigasi (Logic)}{6}{subsection.28}%
+\contentsline {subsubsection}{\numberline {3.3.1}Pengendali Driver Motor (motor\_manager.py)}{6}{subsubsection.29}%
+\contentsline {subsubsection}{\numberline {3.3.2}Pengelola Sensor Jarak Ultrasonik (ultrasonic\_manager.py)}{8}{subsubsection.116}%
+\contentsline {subsubsection}{\numberline {3.3.3}Algoritma Kontrol PID dan Logika Navigasi Utama (navigator.py)}{11}{subsubsection.187}%
+\contentsline {paragraph}{Algoritma Kendali PID (Proportional-Integral-Derivative)}{11}{section*.188}%
+\contentsline {paragraph}{Arsitektur Finite State Machine (FSM) Sekuensial}{11}{section*.193}%
+\contentsline {section}{\numberline {4}Pengujian dan Hasil Pembahasan}{19}{section.418}%
+\contentsline {subsection}{\numberline {4.1}Pengujian Akurasi Sensor Jarak}{19}{subsection.419}%
+\contentsline {subsection}{\numberline {4.2}Analisis Pengujian Navigasi}{19}{subsection.421}%
+\contentsline {section}{\numberline {5}Kesimpulan dan Saran}{20}{section.422}%
+\contentsline {subsection}{\numberline {5.1}Kesimpulan}{20}{subsection.423}%
+\contentsline {subsection}{\numberline {5.2}Saran}{20}{subsection.427}%

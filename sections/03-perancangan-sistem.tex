@@ -1,12 +1,11 @@
 \section{Perancangan Sistem}
 \label{sec:perancangan_sistem}
 
-Pada bab ini dijelaskan arsitektur perancangan sistem robotika secara menyeluruh, yang terbagi menjadi perancangan perangkat keras (hardware), perancangan perangkat lunak (software/flowchart), dan implementasi kode program.
+Pada bab ini dijelaskan arsitektur perancangan sistem robotika secara menyeluruh, yang terbagi menjadi perancangan perangkat keras (hardware), perancangan sistem visual (visi komputer), dan perancangan logika kontrol navigasi (logic).
 
-\subsection{Arsitektur Perangkat Keras}
-Robot ini terdiri dari komponen mekanik sasis, aktuator berupa motor DC dengan driver motor L298N, sensor jarak HC-SR04, dan unit pengendali Arduino Uno. Diagram blok sistem perangkat keras dapat dilihat pada Gambar~\ref{fig:block_diagram}.
+\subsection{Perancangan Perangkat Keras (Hardware)}
+Robot ini dirancang menggunakan platform \textit{Single Board Computer} (SBC) berupa Raspberry Pi sebagai unit pemroses utama. Perangkat keras robot terbagi menjadi komponen mekanik sasis, sistem penggerak aktuator berupa motor DC dengan driver motor L298N, sensor jarak ultrasonik HC-SR04 untuk deteksi rintangan fisik jarak dekat, serta USB Webcam sebagai sensor penglihatan utama. Diagram blok sistem perangkat keras dapat dilihat pada Gambar~\ref{fig:block_diagram}.
 
-% Contoh penulisan gambar (Ganti nama file gambar dengan yang ada di folder figures)
 \begin{figure}[H]
     \centering
     % \includegraphics[width=0.7\textwidth]{diagram_blok.png} % Hapus tanda persen (%) jika file sudah ada
@@ -15,8 +14,7 @@ Robot ini terdiri dari komponen mekanik sasis, aktuator berupa motor DC dengan d
     \label{fig:block_diagram}
 \end{figure}
 
-\subsection{Foto Fisik Robot}
-Dokumentasi foto robot yang telah dirakit diletakkan pada Gambar~\ref{fig:foto_robot}. Letakkan file foto robot Anda di dalam folder \texttt{figures/}.
+Dokumentasi foto robot yang telah dirakit diletakkan pada Gambar~\ref{fig:foto_robot}. File gambar disimpan di dalam folder \texttt{figures/}.
 
 \begin{figure}[H]
     \centering
@@ -26,52 +24,463 @@ Dokumentasi foto robot yang telah dirakit diletakkan pada Gambar~\ref{fig:foto_r
     \label{fig:foto_robot}
 \end{figure}
 
-\subsection{Perancangan Perangkat Lunak}
-Sistem kendali navigasi robot didesain menggunakan algoritma sederhana dengan alur logika seperti ditunjukkan oleh potongan kode program berikut.
+\subsection{Perancangan Sistem Visual (Visual)}
+Perancangan subsistem visual berfokus pada pemrosesan citra digital yang ditangkap oleh USB Webcam secara real-time. Webcam diposisikan di bagian depan robot untuk menangkap kondisi lingkungan. Sinyal video dari webcam diproses oleh modul pemrosesan citra (Visi Komputer) yang dikembangkan terpisah dan dijalankan sebagai layanan web server lokal berbasis Flask API pada alamat URL \texttt{http://127.0.0.1:5000/api/objects}.
 
-% Contoh Penulisan Kode Program (Kodingan Robot)
-Berikut adalah potongan kode pemrograman Arduino untuk membaca sensor jarak ultrasonik dan mengontrol arah gerak robot:
+Layanan Flask API ini mengekstraksi frame gambar, melakukan segmentasi atau deteksi objek, dan membagi objek yang terdeteksi ke dalam dua kategori label utama, yaitu:
+\begin{enumerate}
+    \item \textbf{TARGET}: Representasi objek tujuan yang harus dikejar oleh robot (misalnya bola berwarna atau penanda jalur khusus).
+    \item \textbf{OBSTACLE}: Representasi rintangan visual di depan robot yang harus dihindari secara visual sebelum terlalu dekat secara fisik.
+\end{enumerate}
 
-\begin{lstlisting}[language=C++, caption={Kode Program Kontrol Motor Berdasarkan Sensor Jarak}, label={lst:arduino_code}]
-// Pin Definition
-const int trigPin = 9;
-const int echoPin = 10;
-const int motorPin1 = 5;
-const int motorPin2 = 6;
+Data hasil pemrosesan citra dikembalikan dalam format JSON yang berisi koordinat bounding box setiap objek. Parameter penting yang digunakan oleh sistem navigasi adalah koordinat tengah sumbu-x objek ($x_{\text{objek}}$) untuk menentukan deviasi arah, serta ukuran dimensi lebar ($w$) dan tinggi ($h$) bounding box untuk menghitung luas area objek ($A = w \times h$) sebagai indikator jarak visual objek dari kamera.
 
-void setup() {
-  pinMode(trigPin, OUTPUT);
-  pinMode(echoPin, INPUT);
-  pinMode(motorPin1, OUTPUT);
-  pinMode(motorPin2, OUTPUT);
-  Serial.begin(9600);
-}
+\subsection{Perancangan Logika Kontrol dan Navigasi (Logic)}
+Bagian perancangan logika kontrol merupakan pusat pengambilan keputusan robot berbasis Raspberry Pi. Logika navigasi dirancang menggunakan bahasa pemrograman Python 3 dengan struktur modular yang terdiri dari tiga berkas program utama: \texttt{motor\_manager.py}, \texttt{ultrasonic\_manager.py}, dan \texttt{navigator.py}. Diagram alir atau arsitektur modular perangkat lunak navigasi ini diintegrasikan dalam satu kesatuan sistem otonom.
 
-void loop() {
-  long duration;
-  int distance;
-  
-  // Ultrasonic Sensor Read
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
-  
-  duration = pulseIn(echoPin, HIGH);
-  distance = duration * 0.034 / 2;
-  
-  // Navigation Logic
-  if (distance < 20) {
-    // Obstacle detected, turn right
-    digitalWrite(motorPin1, LOW);
-    digitalWrite(motorPin2, HIGH);
-  } else {
-    // Path is clear, move forward
-    digitalWrite(motorPin1, HIGH);
-    digitalWrite(motorPin2, LOW);
-  }
-  delay(100);
-}
+\subsubsection{Pengendali Driver Motor (motor\_manager.py)}
+Modul \texttt{motor\_manager.py} bertanggung jawab langsung untuk mengontrol arah putaran dan kecepatan motor DC menggunakan sinyal PWM (\textit{Pulse Width Modulation}) yang disuplai oleh Raspberry Pi melalui GPIO ke driver motor L298N. Kode implementasi modul ini dapat dilihat pada Kode Program~\ref{lst:motor_manager}.
+
+Beberapa aspek logika penting pada modul ini meliputi:
+\begin{itemize}
+    \item \textbf{Kalibrasi Bias Roda (\textit{Left Bias}):} Karena ketidakseimbangan mekanis bawaan motor DC kiri dan kanan, diterapkan pengali bias roda kiri (\texttt{left\_bias}) sebesar $1.14$ pada saat inisialisasi di navigator agar robot dapat melaju lurus secara simetris.
+    \item \textbf{Pembatasan Kecepatan Proporsional (\textit{Speed Limiting}):} Kecepatan dikontrol dalam rentang $-255$ hingga $255$. Jika input kecepatan melebihi batas \texttt{max\_speed\_limit} (disetel pada 180), kecepatan kedua motor diturunkan secara proporsional menggunakan persamaan rasio agar arah belokan (\textit{steering ratio}) tetap terjaga sesuai instruksi navigasi.
+    \item \textbf{Torsi Minimum Motor:} Untuk mengatasi gesekan statis sasis robot, diterapkan logika ambang batas bawah di mana motor yang diinstruksikan bergerak akan diberikan daya minimal sebesar $\pm 90$.
+\end{itemize}
+
+\begin{lstlisting}[language=Python, caption={Kode Program Modul Pengendali Motor (motor\_manager.py)}, label={lst:motor_manager}]
+import RPi.GPIO as GPIO
+
+class MotorManager:
+    def __init__(self, ena=13, in1=19, in2=26, enb=12, in3=16, in4=20, max_speed_limit=150, left_bias=1.0):
+        # BCM Pin Configuration
+        self.ENA = ena  # PWM Left
+        self.IN1 = in1  # Dir 1 Left
+        self.IN2 = in2  # Dir 2 Left
+        
+        self.ENB = enb  # PWM Right
+        self.IN3 = in3  # Dir 1 Right
+        self.IN4 = in4  # Dir 2 Right
+        
+        self.max_speed_limit = max_speed_limit
+        self.left_bias = left_bias
+        
+        # Setup Pins
+        GPIO.setmode(GPIO.BCM)
+        for pin in [self.ENA, self.IN1, self.IN2, self.ENB, self.IN3, self.IN4]:
+            GPIO.setup(pin, GPIO.OUT)
+            
+        # Setup PWM
+        self.pwm_left = GPIO.PWM(self.ENA, 1000)  # 1kHz frequency
+        self.pwm_right = GPIO.PWM(self.ENB, 1000)
+        
+        self.pwm_left.start(0)
+        self.pwm_right.start(0)
+
+    def set_motors(self, speed_left, speed_right):
+        """
+        Set speed for both motors. 
+        speed range: -255 to 255 (negative for reverse)
+        """
+        # Terapkan bias untuk motor kiri
+        speed_left = speed_left * self.left_bias
+
+        # Batasi kecepatan secara proporsional agar rasio kemudi tetap terjaga
+        # Gunakan max_speed_limit sebagai plafon absolut
+        abs_l = abs(speed_left)
+        abs_r = abs(speed_right)
+        max_val = max(abs_l, abs_r)
+        
+        if max_val > self.max_speed_limit:
+            ratio = self.max_speed_limit / max_val
+            speed_left *= ratio
+            speed_right *= ratio
+        # --- Left Motor ---
+        if speed_left >= 0:
+            GPIO.output(self.IN1, GPIO.HIGH)
+            GPIO.output(self.IN2, GPIO.LOW)
+        else:
+            GPIO.output(self.IN1, GPIO.LOW)
+            GPIO.output(self.IN2, GPIO.HIGH)
+            speed_left = abs(speed_left)
+            
+        # Convert 0-255 to 0-100% duty cycle
+        duty_left = (speed_left / 255.0) * 100
+        self.pwm_left.ChangeDutyCycle(min(duty_left, 100))
+        
+        # --- Right Motor ---
+        if speed_right >= 0:
+            GPIO.output(self.IN3, GPIO.HIGH)
+            GPIO.output(self.IN4, GPIO.LOW)
+        else:
+            GPIO.output(self.IN3, GPIO.LOW)
+            GPIO.output(self.IN4, GPIO.HIGH)
+            speed_right = abs(speed_right)
+            
+        duty_right = (speed_right / 255.0) * 100
+        self.pwm_right.ChangeDutyCycle(min(duty_right, 100))
+
+    def stop(self):
+        self.pwm_left.ChangeDutyCycle(0)
+        self.pwm_right.ChangeDutyCycle(0)
+        GPIO.output(self.IN1, GPIO.LOW)
+        GPIO.output(self.IN2, GPIO.LOW)
+        GPIO.output(self.IN3, GPIO.LOW)
+        GPIO.output(self.IN4, GPIO.LOW)
+
+    def cleanup(self):
+        self.stop()
+        self.pwm_left.stop()
+        self.pwm_right.stop()
+        self.pwm_left = None
+        self.pwm_right = None
 \end{lstlisting}
-Bagian kode di atas merepresentasikan implementasi kontrol kemudi otomatis robot berbasis deteksi halangan di depan (obstacle avoidance).
+
+\subsubsection{Pengelola Sensor Jarak Ultrasonik (ultrasonic\_manager.py)}
+Modul \texttt{ultrasonic\_manager.py} digunakan untuk berinteraksi dengan sensor ultrasonik HC-SR04 guna membaca jarak fisik hambatan di depan robot secara langsung. Kode implementasi modul ini ditunjukkan pada Kode Program~\ref{lst:ultrasonic_manager}.
+
+Untuk memastikan akurasi dan kecepatan respon navigasi, modul ini menerapkan beberapa metode logis berikut:
+\begin{itemize}
+    \item \textbf{Moving Average dan Penyaringan Data (Filtering):} Sensor melakukan 3 kali pembacaan jarak mentah dengan jeda singkat 10 ms antar pembacaan. Nilai yang dianggap valid adalah jarak dalam rentang $2$ hingga $400$ cm. Pembacaan yang valid kemudian dirata-ratakan untuk menyaring pencilan (\textit{noise}).
+    \item \textbf{Faktor Koreksi Dinamis (Kalibrasi):} Modul memuat nilai faktor koreksi dari berkas teks eksternal \texttt{faktor\_koreksi.txt} saat inisialisasi. Jarak akhir yang digunakan oleh robot merupakan hasil perkalian jarak mentah rata-rata dengan faktor koreksi ini ($s_{\text{kalibrasi}} = s_{\text{mentah}} \times f_{\text{koreksi}}$).
+    \item \textbf{Pencegahan Kegagalan (Fallback):} Jika sensor gagal mendapatkan data pembacaan yang valid, fungsi secara otomatis mengembalikan nilai $999$ cm agar robot tidak berhenti mendadak akibat kesalahan sensor sementara.
+\end{itemize}
+
+\begin{lstlisting}[language=Python, caption={Kode Program Modul Sensor Ultrasonik (ultrasonic\_manager.py)}, label={lst:ultrasonic_manager}]
+import RPi.GPIO as GPIO
+import time
+import os
+
+class UltrasonicManager:
+    def __init__(self, trigger_pin=17, echo_pin=27, file_kalibrasi="faktor_koreksi.txt"):
+        self.PIN_TRIGGER = trigger_pin
+        self.PIN_ECHO = echo_pin
+        self.FILE_KALIBRASI = file_kalibrasi
+        self.faktor_koreksi = 1.0
+        
+        # Setup GPIO
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(self.PIN_TRIGGER, GPIO.OUT)
+        GPIO.setup(self.PIN_ECHO, GPIO.IN)
+        GPIO.output(self.PIN_TRIGGER, GPIO.LOW)
+        
+        self.load_kalibrasi()
+
+    def load_kalibrasi(self):
+        if os.path.exists(self.FILE_KALIBRASI):
+            try:
+                with open(self.FILE_KALIBRASI, "r") as f:
+                    self.faktor_koreksi = float(f.read().strip())
+                    print(f"[ULTRASONIC] Faktor koreksi dimuat: {self.faktor_koreksi:.4f}")
+            except:
+                print("[ULTRASONIC] Gagal membaca file kalibrasi, menggunakan 1.0")
+
+    def ukur_jarak_mentah(self):
+        total_jarak = 0
+        pembacaan_valid = 0
+        
+        for _ in range(3): # Dikurangi ke 3 pembacaan agar navigasi lebih responsif
+            GPIO.output(self.PIN_TRIGGER, GPIO.HIGH)
+            time.sleep(0.00001)
+            GPIO.output(self.PIN_TRIGGER, GPIO.LOW)
+
+            waktu_mulai = time.time()
+            waktu_selesai = time.time()
+            timeout = time.time() + 0.1 # Timeout dipercepat
+
+            while GPIO.input(self.PIN_ECHO) == 0:
+                waktu_mulai = time.time()
+                if waktu_mulai > timeout: break
+
+            while GPIO.input(self.PIN_ECHO) == 1:
+                waktu_selesai = time.time()
+                if waktu_selesai > timeout: break
+
+            durasi = waktu_selesai - waktu_mulai
+            jarak = (durasi * 34300) / 2
+            
+            if 2 <= jarak <= 400:
+                total_jarak += jarak
+                pembacaan_valid += 1
+            time.sleep(0.01)
+            
+        if pembacaan_valid > 0:
+            return total_jarak / pembacaan_valid
+        return None
+
+    def get_jarak(self):
+        mentah = self.ukur_jarak_mentah()
+        if mentah is not None:
+            return mentah * self.faktor_koreksi
+        return 999 # Kembalikan nilai jauh jika gagal baca agar robot tidak stop tiba-tiba
+
+    def cleanup(self):
+        pass
+\end{lstlisting}
+
+\subsubsection{Algoritma Kontrol PID dan Logika Navigasi Utama (navigator.py)}
+Modul \texttt{navigator.py} merupakan otak navigasi otonom yang mengintegrasikan data sensor jarak ultrasonik dan data visi komputer untuk mengambil keputusan gerak secara sekuensial. Kode lengkap dari modul ini ditunjukkan pada Kode Program~\ref{lst:navigator}.
+
+\paragraph{Algoritma Kendali PID (Proportional-Integral-Derivative)}
+Sistem kemudi otomatis saat mendeteksi target visual menggunakan pengendali PID untuk meminimalkan deviasi arah (error) terhadap titik tengah kamera. Persamaan matematika PID yang diimplementasikan adalah:
+\begin{equation}
+    e(t) = x_{\text{target}} - x_{\text{setpoint}}
+    \label{eq:pid_error}
+\end{equation}
+\begin{equation}
+    u(t) = K_p \cdot e(t) + K_i \int_{0}^{t} e(\tau) d\tau + K_d \frac{de(t)}{dt}
+    \label{eq:pid_output}
+\end{equation}
+di mana $x_{\text{setpoint}} = 160$ piksel (nilai tengah horizontal dari resolusi lebar citra 320 piksel), dan $e(t)$ adalah error posisi horizontal target. Nilai konstanta kendali yang disetel adalah $K_p = 0.8$ untuk respon proporsional yang tanggap, $K_d = 0.05$ untuk meredam osilasi arah, dan $K_i = 0.0$ untuk menghindari akumulasi error jangka panjang. Luaran kendali $u(t)$ bertindak sebagai nilai kemudi (\textit{steer value}) yang memodifikasi kecepatan motor kiri ($v_{\text{kiri}}$) dan motor kanan ($v_{\text{kanan}}$):
+\begin{equation}
+    v_{\text{kiri}} = V_{\text{base}} + u(t)
+    \label{eq:motor_left}
+\end{equation}
+\begin{equation}
+    v_{\text{kanan}} = V_{\text{base}} - u(t)
+    \label{eq:motor_right}
+\end{equation}
+di mana $V_{\text{base}} = 125$ merupakan kecepatan dasar gerakan maju robot.
+
+\paragraph{Arsitektur Finite State Machine (FSM) Sekuensial}
+Logika navigasi beroperasi dalam suatu loop utama tak terbatas yang berjalan secara sekuensial dan terbagi menjadi beberapa keadaan (\textit{states}):
+\begin{enumerate}
+    \item \textbf{State 1: Deteksi Rintangan Ultrasonik Jarak Dekat:} Jarak depan diperiksa terlebih dahulu menggunakan sensor ultrasonik.
+    \begin{itemize}
+        \item Jika $s \le 15$ cm, robot akan berhenti seketika.
+        \item Sistem memeriksa data visi komputer. Jika objek di depannya terdeteksi sebagai \texttt{TARGET} dengan area visual $> 10.000$ piksel dan jarak fisik $\le 12$ cm, robot mendeteksi kondisi \textbf{Finish} dan menghentikan navigasi sepenuhnya.
+        \item Jika bukan target akhir, robot mendeteksi rintangan (\texttt{OBSTACLE}) fisik. Robot mundur perlahan (\texttt{-V\_SLOW}) selama $0.5$ detik, berhenti $0.2$ detik, kemudian melakukan manuver berputar menghindar ke kiri atau kanan selama $0.3$ detik berdasarkan arah memori target terakhir (\texttt{last\_known\_target\_direction}).
+    \end{itemize}
+    
+    \item \textbf{State 2: Pembacaan Target dan Rintangan Visual:} Jika tidak ada rintangan jarak dekat, robot berhenti diam selama 0.1 detik untuk menstabilkan gambar kamera dari efek kabur akibat guncangan (\textit{motion blur}), memanggil REST API untuk mengambil data visi terbaru, dan mengidentifikasi target terbesar dengan area $> 600$ piksel serta rintangan visual terbesar dengan area $> 2000$ piksel.
+    
+    \item \textbf{State 3: Eksekusi Gerakan Berprioritas:}
+    \begin{itemize}
+        \item \textbf{Prioritas 1 (Pengejaran Target):} Jika target terdeteksi, robot melaju ke arah target menggunakan kendali kemudi PID yang dihitung dari koordinat target. Arah gerak disimpan ke variabel memori \texttt{last\_known\_target\_direction} (LEFT atau RIGHT). Robot melaju selama $0.25$ detik.
+        \item \textbf{Prioritas 2 (Penghindaran Rintangan Visual):} Jika tidak ada target tetapi rintangan terdeteksi di area tengah ($160 \pm 75$ piksel), robot menghindar dengan berbelok menjauh dari rintangan visual tersebut. Jika rintangan berada di luar area tengah, robot melaju lurus dengan aman. Robot melaju selama $0.25$ detik.
+        \item \textbf{Prioritas 3 (Pencarian Target berbasis Memori):} Jika tidak ada objek terdeteksi, robot memutar badannya ke arah memori target terakhir untuk menemukannya kembali selama $0.2$ detik. Jika tidak ada memori arah target, robot diam demi keamanan.
+    \end{itemize}
+\end{enumerate}
+
+\begin{lstlisting}[language=Python, caption={Kode Program Modul Navigasi Utama (navigator.py)}, label={lst:navigator}]
+import requests
+import time
+from .motor_manager import MotorManager
+from .ultrasonic_manager import UltrasonicManager
+
+# =========================================================================
+# PARAMETER & KONFIGURASI
+# =========================================================================
+
+# --- Parameter PID (Digunakan untuk kalkulasi steer) ---
+Kp = 0.8  # Lebih agresif
+Ki = 0.0   
+Kd = 0.05   
+
+# --- Pengaturan Kecepatan Motor (PWM 0-255) ---
+V_BASE = 125   # Diturunkan sedikit agar selisih kecepatan lebih terasa
+V_SLOW = 100
+MAX_SPEED_LIMIT = 180 
+
+# --- Konstanta Kamera ---
+SETPOINT_TENGAH = 160
+
+# --- Koneksi Visi ---
+API_URL = "http://127.0.0.1:5000/api/objects"
+
+# =========================================================================
+# VARIABEL GLOBAL PID
+# =========================================================================
+last_error = 0
+integral = 0
+
+def hitung_PID(current_error):
+    global last_error, integral
+    P = current_error
+    integral += current_error
+    if integral > 50: integral = 50
+    if integral < -50: integral = -50
+    derivative = current_error - last_error
+    total_output = (Kp * P) + (Ki * integral) + (Kd * derivative)
+    last_error = current_error
+    return total_output
+
+# --- Init Hardware ---
+# Bias 1.14 untuk mengimbangi roda kiri secara permanen
+motors = MotorManager(max_speed_limit=MAX_SPEED_LIMIT, left_bias=1.14)
+ultrasonic = UltrasonicManager()
+
+def jalankan_motor(v_kiri, v_kanan):
+    # Pastikan motor yang harusnya jalan punya torsi cukup (min 90)
+    if v_kiri > 0 and v_kiri < 90: v_kiri = 90
+    if v_kanan > 0 and v_kanan < 90: v_kanan = 90
+    if v_kiri < 0 and v_kiri > -90: v_kiri = -90
+    if v_kanan < 0 and v_kanan > -90: v_kanan = -90
+    
+    motors.set_motors(v_kiri, v_kanan)
+
+def stop_robot():
+    motors.stop()
+
+def ambil_data_visi():
+    try:
+        r = requests.get(API_URL, timeout=0.1)
+        if r.status_code == 200:
+            return r.json()
+    except:
+        pass
+    return None
+
+# =========================================================================
+# LOOP UTAMA (LOGIKA SEKUENSIAL: AMBIL GAMBAR -> JALAN -> STOP)
+# =========================================================================
+
+def main_loop(shared_data=None):
+    SAFE_MARGIN_PIXELS = 100 
+    MIN_AREA_TARGET = 600       # Abaikan target terlalu kecil/jauh
+    MIN_AREA_OBSTACLE = 2000     # Abaikan rintangan jauh
+    TARGET_REACHED_AREA = 10000  # Target dianggap "Penuh" di kamera (Finish)
+    
+    print(f"Memulai Navigasi Sekuensial (Smooth | Bias: 1.18 | Body: 15cm)...")
+    
+    last_known_target_direction = "CENTER"
+    
+    while True:
+        nav_aktif = shared_data.get('nav_active', False) if shared_data is not None else True
+
+        # 1. Baca Sensor Ultrasonik
+        jarak_mentah = ultrasonic.ukur_jarak_mentah()
+        if shared_data is not None:
+            if jarak_mentah is not None: shared_data['raw_distance'] = round(jarak_mentah, 2)
+            current_factor = shared_data.get('faktor_koreksi', ultrasonic.faktor_koreksi)
+            jarak_depan = (jarak_mentah * current_factor) if jarak_mentah else 999
+        else:
+            jarak_depan = ultrasonic.get_jarak()
+
+        if not nav_aktif:
+            stop_robot()
+            time.sleep(0.1)
+            continue
+
+        # --- STATE 1: JARAK DEKAT (MUNDUR & HINDAR) ---
+        if jarak_depan <= 15:
+            stop_robot()
+            time.sleep(0.1)
+            
+            # Cek apakah ini target finish (Harus berwarna target DAN area besar)
+            vision_data = ambil_data_visi()
+            target_area = 0
+            if vision_data:
+                for obj in vision_data.get('objects', []):
+                    if obj['label'] == 'TARGET':
+                        area = obj['bbox']['w'] * obj['bbox']['h']
+                        if area > target_area: target_area = area
+            
+            if target_area > TARGET_REACHED_AREA and jarak_depan <= 12:
+                print(f"[FINISH] Target Terpenuhi (Area: {target_area}) | Stop.")
+                stop_robot()
+                if shared_data is not None: shared_data['nav_active'] = False
+                continue
+            else:
+                # Jika jarak dekat tapi bukan target penuh -> Itu Obstacle
+                print(f">> OBSTACLE TERDETEKSI ({jarak_depan:.1f} cm) | Manuver Mundur...")
+                jalankan_motor(-V_SLOW, -V_SLOW)
+                time.sleep(0.5)
+                stop_robot()
+                time.sleep(0.2)
+                
+                # Belok sedikit untuk mencari jalan lain
+                if last_known_target_direction == "LEFT":
+                    print(">> MANUVER: Belok KANAN menghindari rintangan")
+                    jalankan_motor(120, -100)
+                else:
+                    print(">> MANUVER: Belok KIRI menghindari rintangan")
+                    jalankan_motor(-100, 110)
+                time.sleep(0.3)
+                stop_robot()
+                time.sleep(0.2)
+                continue
+
+        # --- STATE 2: AMBIL GAMBAR & TENTUKAN ARAH ---
+        stop_robot() # Diam saat ambil gambar agar akurat
+        time.sleep(0.1)
+        vision_data = ambil_data_visi()
+        
+        x_target = -1
+        x_obstacle = -1
+        if vision_data:
+            max_area_target = 0
+            max_area_obs = 0
+            for obj in vision_data.get('objects', []):
+                area = obj['bbox']['w'] * obj['bbox']['h']
+                if obj['label'] == 'TARGET' and area > MIN_AREA_TARGET:
+                    if area > max_area_target:
+                        max_area_target = area
+                        x_target = obj['bbox']['x'] + (obj['bbox']['w'] / 2)
+                elif obj['label'] == 'OBSTACLE' and area > MIN_AREA_OBSTACLE:
+                    if area > max_area_obs:
+                        max_area_obs = area
+                        x_obstacle = obj['bbox']['x'] + (obj['bbox']['w'] / 2)
+
+        # --- STATE 3: EKSEKUSI GERAKAN ---
+        # PRIORITAS 1: Jika ada target, kejar target!
+        if x_target != -1:
+            error = x_target - 160
+            steer = hitung_PID(error)
+            
+            v_kiri = V_BASE + steer
+            v_kanan = V_BASE - steer
+
+            # Logging lebih sensitif (ambang batas diturunkan dari 40 ke 20)
+            if error < -20: 
+                last_known_target_direction = "LEFT"
+                print(f">> BELOK KIRI: Target X:{x_target:.1f} | L:{v_kiri:.1f} R:{v_kanan:.1f}")
+            elif error > 20: 
+                last_known_target_direction = "RIGHT"
+                print(f">> BELOK KANAN: Target X:{x_target:.1f} | L:{v_kiri:.1f} R:{v_kanan:.1f}")
+            else: 
+                last_known_target_direction = "CENTER"
+                print(f">> MAJU: Target X:{x_target:.1f} | L:{v_kiri:.1f} R:{v_kanan:.1f}")
+
+            jalankan_motor(v_kiri, v_kanan)
+            time.sleep(0.25)
+
+        # PRIORITAS 2: Jika tidak ada target tapi ada rintangan, hindari!
+        elif x_obstacle != -1:
+            # Safe margin dipersempit agar tidak terlalu penakut (75px)
+            if x_obstacle < (160 + 75) and x_obstacle > (160 - 75):
+                if x_obstacle < 160:
+                    print(f">> HINDAR KANAN: Ada rintangan di kiri")
+                    jalankan_motor(V_BASE + 35, V_BASE - 35)
+                else:
+                    print(f">> HINDAR KIRI: Ada rintangan di kanan")
+                    jalankan_motor(V_BASE - 25, V_BASE + 25)
+            else:
+                print(f">> MAJU: Rintangan di luar jalur (Aman)")
+                jalankan_motor(V_BASE, V_BASE)
+            time.sleep(0.25)
+
+        else:
+            # PRIORITAS 3: Cari target berdasarkan memori
+            if last_known_target_direction == "LEFT":
+                print(f">> SEARCH: Putar KIRI mencari target...")
+                jalankan_motor(-100, 110)
+            elif last_known_target_direction == "RIGHT":
+                print(f">> SEARCH: Putar KANAN mencari target...")
+                jalankan_motor(120, -100)
+            else:
+                print(f">> SEARCH: Target hilang, robot diam.")
+                stop_robot()
+            time.sleep(0.2)
+            
+        stop_robot() 
+        time.sleep(0.1) # Jeda stabilisasi
+
+if __name__ == "__main__":
+    try:
+        main_loop()
+    except KeyboardInterrupt:
+        stop_robot()
+    finally:
+        motors.cleanup()
+\end{lstlisting}

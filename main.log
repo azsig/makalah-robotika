@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.9.28)  22 JUN 2026 14:47
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.9.28)  23 JUN 2026 07:27
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -934,68 +934,145 @@ File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
 
 [3] (./sections/03-perancangan-sistem.tex
 LaTeX Font Info:    Trying to load font information for OT1+pcr on input line 1
-9.
+7.
 
 (/usr/local/texlive/2025/texmf-dist/tex/latex/psnfss/ot1pcr.fd
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 )
 
-[4] (/usr/local/texlive/2025/texmf-dist/tex/latex/listings/lstlang1.sty
-File: lstlang1.sty 2024/09/23 1.10c listings language file
-)
+[4]
+Overfull \hbox (2.01782pt too wide) in paragraph at lines 28--29
+\OT1/ptm/m/n/12 (-20) kal ber-ba-sis Flask API pa-da ala-mat URL \OT1/pcr/m/n/1
+2 http://127.0.0.1:5000/api/objects\OT1/ptm/m/n/12 (-20) . 
+ []
+
+
+
+[5]
+Overfull \hbox (16.55019pt too wide) in paragraph at lines 47--48
+\OT1/ptm/m/n/12 (-20) lam ren-tang $\OMS/cmsy/m/n/12 ^^@\OT1/cmr/m/n/12 255$ \O
+T1/ptm/m/n/12 (-20) hing-ga $\OT1/cmr/m/n/12 255$\OT1/ptm/m/n/12 (-20) . Ji-ka 
+in-put ke-ce-pat-an me-le-bi-hi ba-tas \OT1/pcr/m/n/12 max[]speed[]limit
+ []
+
 (/usr/local/texlive/2025/texmf-dist/tex/latex/listings/lstlang1.sty
 File: lstlang1.sty 2024/09/23 1.10c listings language file
 )
-(/usr/local/texlive/2025/texmf-dist/tex/latex/listings/lstmisc.sty
-File: lstmisc.sty 2024/09/23 1.10c (Carsten Heinz)
-)
 Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on i
-nput line 35.
+nput line 51.
 
 
-[5])
+[6]
 
-[6] (./sections/04-pengujian-hasil.tex
+[7]
+
+[8]
+
+[9]
+
+[10]
+Overfull \hbox (11.0353pt too wide) in paragraph at lines 252--253
+\OT1/ptm/m/n/12 (-20) ber-da-sark-an arah me-mo-ri tar-get ter-a-khir (\OT1/pcr
+/m/n/12 last[]known[]target[]direction\OT1/ptm/m/n/12 (-20) ). 
+ []
+
+
+
+[11]
+Overfull \hbox (5.3362pt too wide) in paragraph at lines 259--260
+\OT1/ptm/m/n/12 (-20) Arah ge-rak di-simp-an ke va-ri-a-bel me-mo-ri \OT1/pcr/m
+/n/12 last[]known[]target[]direction
+ []
+
+
+Overfull \hbox (31.2131pt too wide) in paragraph at lines 271--272
+[][][][] 
+ []
+
+
+Overfull \hbox (31.2131pt too wide) in paragraph at lines 273--275
+[][][][] 
+ []
+
+
+
+[12]
+Overfull \hbox (31.2131pt too wide) in paragraph at lines 291--292
+[][][][] 
+ []
+
+
+Overfull \hbox (31.2131pt too wide) in paragraph at lines 293--294
+[][][][] 
+ []
+
+
+
+[13]
+Overfull \hbox (31.2131pt too wide) in paragraph at lines 334--335
+[][][][] 
+ []
+
+
+Overfull \hbox (31.2131pt too wide) in paragraph at lines 336--338
+[][][][] 
+ []
+
+
+
+[14]
+
+[15]
+
+[16]
+
+[17])
+
+[18] (./sections/04-pengujian-hasil.tex
 Overfull \hbox (48.09315pt too wide) in paragraph at lines 14--27
  [][] 
  []
 
 )
 
-[7] (./sections/05-kesimpulan-saran.tex)
+[19] (./sections/05-kesimpulan-saran.tex)
 
-[8]
+[20]
 
-[9] (./main.aux)
+[21] (./main.aux)
  ***********
 LaTeX2e <2025-06-01> patch level 1
 L3 programming layer <2025-09-02>
  ***********
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: FFCAA9D57AC2A3327840F9F8D5DB6E84;3282.
+(rerunfilecheck)             Checksum: 758224FE74EACDC79A778A609E744065;4640.
 Package logreq Info: Writing requests to 'main.run.xml'.
 \openout1 = `main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 25613 strings out of 467748
- 437603 string characters out of 5426965
- 1472116 words of memory out of 5000000
- 53759 multiletter control sequences out of 15000+600000
- 652633 words of font info for 158 fonts, out of 8000000 for 9000
+ 26168 strings out of 467748
+ 444086 string characters out of 5426965
+ 1788622 words of memory out of 5000000
+ 53866 multiletter control sequences out of 15000+600000
+ 659594 words of font info for 218 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 68i,9n,70p,1001b,2208s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb
-></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb><
-/usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></
-usr/local/texlive/2025/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/loca
-l/texlive/2025/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/
-2025/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2025/texmf
--dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (12 pages, 108907 bytes).
+ 68i,9n,70p,1001b,2228s stack positions out of 10000i,1000n,20000p,200000b,200000s
+</usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb
+></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb>
+</usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></
+usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></us
+r/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/l
+ocal/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/lo
+cal/texlive/2025/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/local/texl
+ive/2025/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2025/t
+exmf-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/local/texlive/2025/texmf-dist
+/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2025/texmf-dist/fonts/typ
+e1/urw/times/utmri8a.pfb>
+Output written on main.pdf (24 pages, 188911 bytes).
 PDF statistics:
- 284 PDF objects out of 1000 (max. 8388607)
- 253 compressed objects within 3 object streams
- 95 named destinations out of 1000 (max. 500000)
- 41625 words of extra memory for PDF output out of 42996 (max. 10000000)
+ 798 PDF objects out of 1000 (max. 8388607)
+ 742 compressed objects within 8 object streams
+ 457 named destinations out of 1000 (max. 500000)
+ 49841 words of extra memory for PDF output out of 51595 (max. 10000000)
 

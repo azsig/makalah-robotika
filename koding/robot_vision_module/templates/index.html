@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Robot Navigasi Otonom</title>
+    <!-- Import Modern Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --secondary: #3b82f6;
+            --secondary-hover: #2563eb;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            margin: 0; 
+            padding: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container { 
+            max-width: 1100px; 
+            width: 100%;
+            margin: 0 auto; 
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        h1 { 
+            font-weight: 700; 
+            font-size: 2rem; 
+            margin: 0 0 8px 0;
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        /* Responsive Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Glassmorphic Panel Cards */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .card h3 {
+            margin: 0 0 16px 0;
+            font-size: 1.15rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .camera-header {
+            color: var(--primary);
+        }
+
+        .ultra-header {
+            color: var(--secondary);
+        }
+
+        /* Video Container UI */
+        .video-container { 
+            background-color: #020617; 
+            padding: 8px; 
+            border-radius: 12px; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            position: relative;
+        }
+
+        img#cameraStream { 
+            width: 100%; 
+            max-width: 640px; 
+            aspect-ratio: 4/3;
+            border-radius: 8px; 
+            cursor: crosshair; 
+            display: block; 
+            transition: transform 0.2s ease;
+        }
+
+        /* Mode Guide Rules */
+        .instruction-box {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            background: rgba(15, 23, 42, 0.4);
+            padding: 12px 16px;
+            border-radius: 10px;
+            border-left: 3px solid var(--primary);
+        }
+
+        .instruction-box b {
+            color: var(--text-main);
+        }
+
+        /* Control Panel Styles */
+        .control-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .status-badge-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--danger);
+            box-shadow: 0 0 10px var(--danger);
+            animation: pulse 1.5s infinite;
+        }
+
+        .status-dot.active {
+            background-color: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        .status-label {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        /* Button & Form UI Elements */
+        button {
+            padding: 10px 20px;
+            font-family: inherit;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: #ffffff;
+        }
+
+        .btn-secondary:hover {
+            background: var(--secondary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: #ffffff;
+        }
+
+        .btn-danger:hover {
+            background: var(--danger-hover);
+            transform: translateY(-1px);
+        }
+
+        .form-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        input[type="number"] {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            width: 100%;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--secondary);
+        }
+
+        /* Telemetry Readouts */
+        .telemetry-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .telemetry-item {
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .telemetry-title {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .telemetry-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        /* Notification Toast styles */
+        #toast { 
+            position: fixed; 
+            bottom: 24px; 
+            right: 24px; 
+            color: white; 
+            padding: 14px 24px; 
+            border-radius: 10px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4); 
+            font-weight: 600;
+            font-size: 0.9rem;
+            z-index: 999;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.7; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.7; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sistem Kendali Visi & Navigasi</h1>
+            <p class="subtitle">Dashboard Kalibrasi dan Monitoring Terintegrasi</p>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Left Column: Video Feed & Guide -->
+            <div>
+                <div class="card">
+                    <div class="instruction-box">
+                        <b>Mode Discovery:</b> Sistem memindai benda secara visual.<br>
+                        <b>Klik Target:</b> Pilih kotak putih pada layar untuk mengunci Target.<br>
+                        <b>Reset:</b> Klik area gambar saat mode Tracking untuk kembali memindai.
+                    </div>
+                    <div class="video-container">
+                        <img id="cameraStream" src="{{ url_for('video_feed') }}" alt="Live Camera Stream">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Settings & Telemetries -->
+            <div>
+                <!-- Power Control Card -->
+                <div class="card">
+                    <h3>⚙️ Kendali Navigasi</h3>
+                    <div class="control-row">
+                        <div class="status-badge-container">
+                            <div id="statusDot" class="status-dot"></div>
+                            <div class="status-label">Navigasi: <span id="navStatusText" style="color: var(--danger)">STANDBY</span></div>
+                        </div>
+                        <button id="btnToggleNav" onclick="toggleNavigation()" class="btn-danger">
+                            START NAV
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Camera Switcher Card -->
+                <div class="card">
+                    <h3 style="color: var(--secondary)">🎥 Pilihan Kamera</h3>
+                    <p class="subtitle" style="margin-bottom: 8px;">Pilih port input kamera aktif:</p>
+                    <div class="form-group">
+                        <select id="cameraSelect" onchange="switchCamera(this.value)" style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 14px; border-radius: 8px; font-family: inherit; font-size: 0.9rem; width: 100%; outline: none; cursor: pointer;">
+                            <option value="">Mendeteksi kamera...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Distance Estimation Card -->
+                <div class="card">
+                    <h3 class="camera-header">📷 Estimasi Jarak Kamera</h3>
+                    <div class="telemetry-grid">
+                        <div class="telemetry-item">
+                            <div class="telemetry-title">Status Kalibrasi</div>
+                            <div id="camCalibStatus" class="telemetry-value" style="color: var(--text-muted); font-size: 1rem;">Menunggu Target...</div>
+                        </div>
+                    </div>
+                    <div id="distance-calibration" style="display: none;">
+                        <p class="subtitle" style="margin-bottom: 8px;">Ukur jarak aktual benda target untuk mengkalibrasi estimasi optik:</p>
+                        <div class="form-group">
+                            <input type="number" id="knownDist" placeholder="Jarak Aktual (cm)">
+                            <button onclick="calibrateDistance()" class="btn-primary">Set Jarak</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ultrasonic Sensor Calibration Card -->
+                <div class="card">
+                    <h3 class="ultra-header">🔊 Sensor Ultrasonik (HC-SR04)</h3>
+                    <div class="telemetry-grid">
+                        <div class="telemetry-item">
+                            <div class="telemetry-title">Jarak Mentah</div>
+                            <div class="telemetry-value"><span id="rawDist" style="color: var(--secondary)">0.0</span> <span style="font-size:0.85rem">cm</span></div>
+                        </div>
+                        <div class="telemetry-item">
+                            <div class="telemetry-title">Faktor Koreksi</div>
+                            <div class="telemetry-value" id="currentFactor">1.0000</div>
+                        </div>
+                    </div>
+                    <p class="subtitle" style="margin-bottom: 8px;">Ukur dengan penggaris untuk menyesuaikan faktor kompensasi ultrasonik:</p>
+                    <div class="form-group">
+                        <input type="number" id="actualUltraDist" placeholder="Jarak Nyata (cm)">
+                        <button onclick="calibrateUltrasonic()" class="btn-secondary">Kalibrasi</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="toast">Notifikasi</div>
+    </div>
+
+    <script>
+        const img = document.getElementById('cameraStream');
+        const toast = document.getElementById('toast');
+        const btnToggle = document.getElementById('btnToggleNav');
+        const statusText = document.getElementById('navStatusText');
+        const statusDot = document.getElementById('statusDot');
+        const camCalibStatus = document.getElementById('camCalibStatus');
+        const distPanel = document.getElementById('distance-calibration');
+
+        // Polling status secara real-time
+        setInterval(() => {
+            // Update Sensor Ultrasonik
+            fetch('/api/ultrasonic-status')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('rawDist').innerText = data.raw_distance.toFixed(1);
+                    document.getElementById('currentFactor').innerText = data.faktor_koreksi.toFixed(4);
+                })
+                .catch(err => console.error("Gagal memuat status ultrasonik", err));
+            
+            // Update Status Kalibrasi Kamera
+            fetch('/api/objects')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.calibration_status) {
+                        camCalibStatus.innerText = "Terkalibrasi ✅";
+                        camCalibStatus.style.color = "var(--primary)";
+                    } else {
+                        camCalibStatus.innerText = "Belum Dikalibrasi ⚠️";
+                        camCalibStatus.style.color = "var(--text-muted)";
+                    }
+                })
+                .catch(err => console.error("Gagal memuat status objek", err));
+            
+            // Update Status Navigasi
+            fetch('/api/navigation-status')
+                .then(res => res.json())
+                .then(data => {
+                    updateNavUI(data.nav_active);
+                })
+                .catch(err => console.error("Gagal memuat status navigasi", err));
+        }, 1000);
+
+        function toggleNavigation() {
+            fetch('/api/toggle-navigation', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    showToast(data.message, data.status);
+                    updateNavUI(data.nav_active);
+                });
+        }
+
+        function updateNavUI(isActive) {
+            if (isActive) {
+                btnToggle.innerText = "STOP NAV";
+                btnToggle.className = "btn-danger";
+                statusText.innerText = "AKTIF / RUNNING";
+                statusText.style.color = "var(--primary)";
+                statusDot.className = "status-dot active";
+            } else {
+                btnToggle.innerText = "START NAV";
+                btnToggle.className = "btn-secondary";
+                statusText.innerText = "STANDBY";
+                statusText.style.color = "var(--danger)";
+                statusDot.className = "status-dot";
+            }
+        }
+
+        function calibrateUltrasonic() {
+            const d = document.getElementById('actualUltraDist').value;
+            if (!d) {
+                showToast("Harap isi jarak nyata!", "error");
+                return;
+            }
+            fetch('/api/calibrate-ultrasonic', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ actual_distance: d })
+            })
+            .then(res => res.json())
+            .then(data => {
+                showToast(data.message, data.status);
+                document.getElementById('actualUltraDist').value = "";
+            });
+        }
+
+        img.addEventListener('click', function(event) {
+            const rect = img.getBoundingClientRect();
+            const scaleX = img.naturalWidth / rect.width;
+            const scaleY = img.naturalHeight / rect.height;
+
+            const x = Math.round((event.clientX - rect.left) * scaleX);
+            const y = Math.round((event.clientY - rect.top) * scaleY);
+
+            fetch('/api/calibrate-color', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ x: x, y: y })
+            })
+            .then(response => response.json())
+            .then(data => {
+                showToast(data.message, data.status);
+                if (data.message.includes("Target dikunci")) {
+                    distPanel.style.display = 'block';
+                } else {
+                    distPanel.style.display = 'none';
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        function calibrateDistance() {
+            const d = document.getElementById('knownDist').value;
+            if (!d) {
+                showToast("Harap isi jarak aktual!", "error");
+                return;
+            }
+            fetch('/api/calibrate-distance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ known_distance: d })
+            })
+            .then(res => res.json())
+            .then(data => {
+                showToast(data.message, data.status);
+                document.getElementById('knownDist').value = "";
+            });
+        }
+
+        // Load daftar kamera yang tersedia saat pertama kali masuk
+        function loadAvailableCameras() {
+            fetch('/api/available-cameras')
+                .then(res => res.json())
+                .then(data => {
+                    const select = document.getElementById('cameraSelect');
+                    select.innerHTML = '';
+                    data.cameras.forEach(idx => {
+                        const opt = document.createElement('option');
+                        opt.value = idx;
+                        opt.innerText = `Kamera ${idx} (/dev/video${idx})`;
+                        if (idx === data.current) {
+                            opt.selected = true;
+                        }
+                        select.appendChild(opt);
+                    });
+                })
+                .catch(err => console.error("Gagal mendeteksi kamera", err));
+        }
+        loadAvailableCameras();
+
+        function switchCamera(index) {
+            if (index === "") return;
+            showToast("Beralih kamera...", "success");
+            fetch('/api/switch-camera', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ camera_index: parseInt(index) })
+            })
+            .then(res => res.json())
+            .then(data => {
+                showToast(data.message, data.status);
+                // Refresh source gambar feed untuk memaksa re-koneksi stream
+                img.src = "{{ url_for('video_feed') }}?t=" + new Date().getTime();
+            })
+            .catch(err => {
+                showToast("Gagal mengganti kamera", "error");
+                console.error(err);
+            });
+        }
+
+        function showToast(msg, status) {
+            toast.innerText = msg;
+            toast.style.backgroundColor = status === 'success' ? '#10b981' : (status === 'error' ? '#ef4444' : '#3b82f6');
+            toast.className = 'show';
+            setTimeout(() => { toast.className = ''; }, 3000);
+        }
+    </script>
+</body>
+</html>
