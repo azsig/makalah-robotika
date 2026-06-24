@@ -1,31 +1,39 @@
-\section{Pendahuluan}
-\label{sec:pendahuluan}
+\section{Introduction}
+\label{sec:introduction}
 
-\subsection{Latar Belakang}
-Tuliskan latar belakang topik proyek robotika atau sistem cerdas yang Anda kerjakan di sini. Latar belakang harus mencakup penjelasan mengenai permasalahan riil yang melandasi pentingnya pembuatan sistem robot ini, penelitian terdahulu yang relevan, serta solusi cerdas yang diajukan dalam proyek ini. 
+Autonomous mobile robots are increasingly used in indoor applications such as material transportation, inspection, surveillance, object retrieval, healthcare, and educational robotics. To operate autonomously, a mobile robot must be able to perceive its surroundings, identify a desired destination, determine an appropriate direction of motion, and avoid collisions with nearby objects. These functions depend strongly on the sensing system because environmental information is required for object recognition, distance measurement, motion planning, and robot control \cite{liu2024sensing}.
 
-Contoh pengacuan pustaka menggunakan LaTeX: Robot ini dirancang untuk mengatasi permasalahan navigasi otonom menggunakan algoritma tertentu \parencite{author2026example}.
+Different sensing technologies can be used to support autonomous navigation, including cameras, ultrasonic sensors, infrared sensors, LiDAR, and depth cameras. A monocular camera is particularly attractive for low-cost robots because it can provide information regarding object color, apparent size, shape, and position within the robot's field of view. Recent studies have demonstrated that monocular vision can be used to recognize obstacles and produce navigation commands for mobile robots operating in indoor environments \cite{wang2021monocular}. Vision-based systems can also perform real-time obstacle detection and path generation without relying on expensive LiDAR or depth-sensing devices \cite{dang2023obstacle}.
 
-\subsection{Rumusan Masalah}
-Berdasarkan latar belakang di atas, rumusan masalah dalam penelitian/proyek ini adalah:
+Despite these advantages, a monocular camera does not directly measure physical distance. The apparent dimensions of an object in an image depend on its actual dimensions, camera parameters, viewing angle, and distance from the camera. Therefore, the position and dimensions of a bounding box can indicate the relative direction and proximity of an object, but additional calibration is required to convert these visual features into an estimated physical distance.
+
+Color-based object detection also presents practical challenges. Changes in illumination, shadows, reflections, and camera exposure can shift the pixel values representing the same physical color. Consequently, permanently defined color thresholds may not provide consistent detection under different environmental conditions. A recent target-recognition study using monocular vision showed that HSV-based segmentation and threshold calibration under the actual experimental illumination can improve the separation of a colored target from the background \cite{jin2022target}. This approach is particularly relevant when the target color is only specified immediately before the robot begins its task.
+
+Ultrasonic sensing provides a low-cost method for obtaining direct distance measurements. A single ultrasonic sensor can be used to detect frontal obstacles, determine whether an object has entered a critical range, and support collision-avoidance decisions \cite{yasin2021ultrasonic}. However, ultrasonic sensing alone cannot reliably determine the color or visual identity of an object. Its measurement is also limited by the sensor's field of view, object orientation, and surface characteristics. Therefore, camera and ultrasonic measurements provide complementary information: the camera identifies and localizes objects in the image, while the ultrasonic sensor supplies frontal distance information.
+
+Existing vision-based navigation studies commonly employ convolutional neural networks, semantic segmentation, geometric models, or mapping algorithms \cite{wang2021monocular,dang2023obstacle}. Although these methods can provide accurate environmental perception, they may require considerable computational resources, training data, or additional system complexity. Such requirements can limit their implementation on embedded platforms such as the Raspberry Pi 3 Model B. Furthermore, many systems assume that the target characteristics are known before deployment, whereas the target color in the considered competition is determined at the test location.
+
+This study develops a two-wheeled mobile robot capable of autonomously navigating toward a color-defined target while avoiding obstacles on a structured indoor track. The robot uses a webcam as the primary visual sensor, an ultrasonic distance sensor as the frontal distance sensor, and a Raspberry Pi 3 Model B as the processing and control unit. Image acquisition, color segmentation, contour extraction, and bounding-box generation are implemented using the OpenCV library.
+
+Before autonomous navigation begins, the target color is calibrated under the actual lighting conditions of the competition environment. The calibrated color thresholds are then used to segment the target and relevant obstacle regions from the camera frames. The detected regions are represented by bounding boxes. The horizontal center of each bounding box is used to determine whether an object is located on the left, center, or right side of the robot's field of view.
+
+The dimensions of the bounding box are used as visual features for estimating object proximity. During the distance-calibration procedure, the bounding-box measurements are paired with reference distance measurements obtained from the HC-SR04 sensor. This procedure establishes a relationship between the apparent dimensions of the detected object and its physical distance from the robot. During navigation, the ultrasonic sensor also provides an additional safety measurement when an obstacle is located directly in front of the robot.
+
+Based on the detected target position, the estimated distance and the obstacle information, the navigation algorithm determines the required motion command. The available commands include moving forward, turning left, turning right, stopping, and performing an obstacle-avoidance maneuver. After avoiding an obstacle, the robot redirects its movement toward the detected target until it reaches the designated target area.
+
+The objective of this study is to design, implement and evaluate an integrated perception and navigation system that enables a two-wheeled mobile robot to reach a color-defined target without colliding with obstacles. The main contributions of this work are summarized as follows:
 \begin{enumerate}
-    \item Bagaimana merancang arsitektur perangkat keras dan lunak pada robot agar mampu beroperasi secara cerdas?
-    \item Bagaimana performa algoritma kontrol/navigasi yang diimplementasikan pada sistem robot tersebut?
-    \item Sejauh mana tingkat akurasi pembacaan sensor dalam mengenali kondisi lingkungan sekitar?
+    \item On-site color-calibration procedure that enables the robot to adapt to a target color specified immediately before operation;
+    
+    \item Lightweight OpenCV-based object-detection method that represents detected targets and obstacles using bounding boxes;
+    
+    \item Ultrasonic-assisted calibration procedure that relates bounding-box dimensions to physical object distance;
+    
+    \item Integrated navigation strategy that combines target-directed movement and reactive obstacle avoidance; and
+    
+    \item Implementation using a webcam, an ultrasonic distance sensor, and a Raspberry Pi 3 Model B as a low-cost embedded robotic platform.
 \end{enumerate}
 
-\subsection{Tujuan Penelitian}
-Tujuan dari pelaksanaan proyek UAS Intelligent Systems and Robotics ini adalah:
-\begin{enumerate}
-    \item Merancang dan mengimplementasikan sistem robotika terintegrasi yang mampu melakukan [tuliskan tugas spesifik robot].
-    \item Menganalisis kinerja sensor dan aktuator yang digunakan pada platform robot.
-    \item Menguji keandalan sistem kontrol cerdas dalam skenario lingkungan nyata.
-\end{enumerate}
+The proposed system emphasizes computationally lightweight image processing and low-cost sensing instead of computationally intensive perception models or expensive depth sensors. Its performance is evaluated on a structured indoor track considering target and obstacle detection accuracy, distance-estimation error, maneuverability, and the success rate of reaching target color during the experiment.
 
-\subsection{Manfaat Penelitian}
-Hasil dari rancang bangun sistem robotika ini diharapkan dapat memberikan manfaat sebagai berikut:
-\begin{itemize}
-    \item \textbf{Bagi Mahasiswa:} Meningkatkan pemahaman praktis mengenai integrasi sensor, aktuator, dan algoritma kecerdasan buatan pada sistem fisik.
-    \item \textbf{Bagi Akademisi:} Menjadi referensi tambahan dalam pengembangan sistem navigasi robotika otonom skala laboratorium.
-    \item \textbf{Bagi Praktisi:} Memberikan inspirasi desain sistem robotika berbiaya rendah dengan performa yang andal.
-\end{itemize}
+\end{document}
