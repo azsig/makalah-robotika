@@ -51,16 +51,319 @@ The physical implementation of these integrated hardware components on the mecha
     \label{fig:fisik_robot}
 \end{figure}
 
-\subsection{Computer Vision System (Visual)}
-The computer vision subsystem processes digital image frames captured by the front-facing USB webcam in real time. The camera stream is processed by a separate computer vision module running as a local Flask web server API at the URL \url{http://127.0.0.1:5000/api/objects}.
+\subsection{Visual System Design (Visual)}
+The design of the visual subsystem focuses on the real-time processing of digital images captured by a USB Webcam. The camera is positioned at the front of the robot to capture the environmental conditions directly. The processing pipeline of this visual system is divided into four main stages: image acquisition, preprocessing and color segmentation (masking), object contour detection, and visual distance estimation.
 
-The Flask API extracts frames, performs color segmentation, and categorizes detected contours into two main labels:
+\subsubsection{Image Acquisition and Camera Management (\textit{camera\_manager.py})}
+Raw images are obtained using a USB Webcam with a native resolution of $320 \times 240$ pixels. The video capture format is set using MJPG (\textit{Motion JPEG}) compression via the V4L2 (\textit{Video for Linux 2}) driver to minimize USB bandwidth usage and the processing load on the Raspberry Pi.
+
+To avoid bottlenecks in the execution of the main program, the camera frame reading process is isolated into a separate background thread that runs asynchronously with a sleep interval of $0.03$ seconds between frame captures. This ensures that the latest frame is always available and ready to be accessed by the image processing module at any time without blocking the main execution thread. The camera management implementation code can be seen in Listing~\ref{lst:camera_manager}.
+
+\begin{lstlisting}[language=Python, caption={Camera Manager Module Code (camera\_manager.py)}, label={lst:camera_manager}]
+import cv2
+import threading
+import time
+import numpy as np
+
+class CameraManager:
+    def __init__(self, src=0):
+        self.src = src
+        # Use V4L2 backend which is much more stable on Raspberry Pi/Linux
+        self.stream = cv2.VideoCapture(self.src, cv2.CAP_V4L2)
+        
+        # Set format to MJPG to save USB bandwidth on Raspberry Pi
+        self.stream.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
+        self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
+        self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+        
+        self.grabbed = False
+        # Initialize with a black frame so it is not None
+        self.frame = np.zeros((240, 320, 3), dtype=np.uint8)
+        self.stopped = False
+        
+        if self.stream.isOpened():
+            print(f"[CAM] Camera {self.src} detected.")
+            # Capture one initial frame synchronously
+            self.grabbed, self.frame = self.stream.read()
+        else:
+            print(f"[CAM] [ERROR] Camera {self.src} not found!")
+
+    def start(self):
+        # Run frame reading in the background thread
+        threading.Thread(target=self.update, args=(), daemon=True).start()
+        return self
+
+    def update(self):
+        while not self.stopped:
+            if not self.stream.isOpened():
+                break
+            self.grabbed, self.frame = self.stream.read()
+            # Small delay to not overload the CPU
+            time.sleep(0.03)
+
+    def read(self):
+        return self.frame
+
+    def stop(self):
+        self.stopped = True
+        self.stream.release()
+
+    def switch_source(self, new_src):
+        """Dynamically switch camera input"""
+        self.stopped = True
+        time.sleep(0.1)  # Give a small delay for the update thread to finish
+        self.stream.release()
+        
+        self.src = new_src
+        self.stream = cv2.VideoCapture(self.src, cv2.CAP_V4L2)
+        self.stream.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
+        self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
+        self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+        
+        self.grabbed = False
+        self.frame = np.zeros((240, 320, 3), dtype=np.uint8)
+        self.stopped = False
+        
+        if self.stream.isOpened():
+            print(f"[CAM] Successfully switched to Camera {self.src}")
+            self.grabbed, self.frame = self.stream.read()
+            self.start()
+            return True
+        else:
+            print(f"[CAM] [ERROR] Failed to open Camera {self.src}")
+            # Restart the update thread so the program does not hang
+            self.start()
+            return False
+\end{lstlisting}
+
+\subsubsection{Preprocessing and Color Segmentation (\textit{image\_processor.py})}
+Before color segmentation is performed, the image frame, which is of type BGR (\textit{Blue-Green-Red}), is first filtered using a Gaussian Blur filter with a kernel size of $11 \times 11$ pixels. This process aims to reduce high-frequency noise and smooth the edges of objects. Subsequently, the image color space is converted from BGR to HSV (\textit{Hue, Saturation, Value}) because the HSV color space is more stable against fluctuations in environmental light intensity.
+
+Object segmentation in the image processing module is carried out by dividing the color thresholding results into two main binary masks:
 \begin{enumerate}
-    \item \textbf{TARGET}: The destination target that the robot must track and pursue (e.g., color-coded markers or landmarks).
-    \item \textbf{OBSTACLE}: Visual obstacles in front of the robot that must be avoided visually.
+    \item \textbf{Target Mask (\textit{mask\_target}):} This mask isolates the target color based on the previously calibrated HSV color threshold values. The threshold range is defined by a lower bound ($HSV_{\text{lower}}$) and an upper bound ($HSV_{\text{upper}}$). To remove isolated small binary pixel noise, a morphological operation consisting of erosion (\textit{erode}) with 2 iterations, followed by dilation (\textit{dilate}) with 2 iterations, is applied.
+    \item \textbf{Vivid Color Mask (\textit{mask\_colorful}):} This mask is used to detect all objects in the environment that have a vivid color saturation (such as origami paper or other physical markers). The lower threshold parameters are set at $HSV = [0, 100, 80]$ and the upper threshold at $HSV = [180, 255, 255]$.
+    \item \textbf{Obstacle Mask (\textit{mask\_obstacle}):} An object is considered an obstacle if it has vivid color characteristics but its color is not the target color. The obstacle mask is obtained through a bitwise AND logic operation between the vivid color mask and the negation of the target mask:
+    \begin{equation}
+        \text{mask\_obstacle} = \text{mask\_colorful} \land \neg(\text{mask\_target})
+        \label{eq:bitwise_obstacle}
+    \end{equation}
+\end{enumerate}
+The implementation code for color segmentation can be seen in Listing~\ref{lst:image_processor}.
+
+\begin{lstlisting}[language=Python, caption={Image Processor Module Code (image\_processor.py)}, label={lst:image_processor}]
+import cv2
+import numpy as np
+
+class ImageProcessor:
+    def process_masks(self, frame, lower_color, upper_color):
+        blurred = cv2.GaussianBlur(frame, (11, 11), 0)
+        hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
+        
+        # 1. Mask for Target (According to user click color)
+        mask_target = cv2.inRange(hsv, lower_color, upper_color)
+        mask_target = cv2.erode(mask_target, None, iterations=2)
+        mask_target = cv2.dilate(mask_target, None, iterations=2)
+        
+        # 2. Mask for Vividly Colored Objects (Origami paper/binder)
+        # Colorful paper usually has high Saturation and Value (> 100)
+        lower_colorful = np.array([0, 100, 80])
+        upper_colorful = np.array([180, 255, 255])
+        mask_colorful = cv2.inRange(hsv, lower_colorful, upper_colorful)
+        
+        mask_colorful = cv2.erode(mask_colorful, None, iterations=2)
+        mask_colorful = cv2.dilate(mask_colorful, None, iterations=2)
+        
+        # 3. Obstacle Mask
+        # An object is considered a Distractor IF its color is vivid, BUT NOT the target color
+        mask_obstacle = cv2.bitwise_and(mask_colorful, cv2.bitwise_not(mask_target))
+        
+        return mask_target, mask_obstacle
+\end{lstlisting}
+
+\subsubsection{Object Contour Detection (\textit{object\_detector.py})}
+Once the binary masks (\textit{mask\_target} and \textit{mask\_obstacle}) are formed, the physical coordinates and dimensions of the objects are identified using an external contour retrieval algorithm (\texttt{cv2.findContours} with the \texttt{CHAIN\_APPROX\_SIMPLE} approximation method). The detected contours are filtered based on their pixel area. Contours with an area less than the minimum threshold (\texttt{min\_area} = 500 pixels) will be ignored to filter out dust particles or minor background noise.
+
+Each valid contour that passes the filtering is enclosed in an upright bounding box (\textit{Bounding Box}) defined by the top-left pixel coordinates ($x, y$) and the width ($w$) and height ($h$) dimensions using the \texttt{cv2.boundingRect} function. The list of detected objects is then sorted by the bounding box area ($w \times h$) in descending order so that the largest object always occupies the first index. The object detection implementation code can be seen in Listing~\ref{lst:object_detector}.
+
+\begin{lstlisting}[language=Python, caption={Object Detector Module Code (object\_detector.py)}, label={lst:object_detector}]
+import cv2
+
+class ObjectDetector:
+    def __init__(self, min_area=500):
+        # min_area is the minimum pixel size to prevent objects from being considered dust/noise
+        self.min_area = min_area
+
+    def find_objects(self, mask):
+        # Find contours (outer outlines of white objects) on the mask
+        contours, _ = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        valid_objects = []
+        for contour in contours:
+            area = cv2.contourArea(contour)
+            # Ignore objects that are too small
+            if area > self.min_area:
+                # Get x, y coordinates, width (w), and height (h)
+                x, y, w, h = cv2.boundingRect(contour)
+                valid_objects.append((x, y, w, h))
+                
+        # Sort objects based on bounding box area (largest to smallest)
+        valid_objects = sorted(valid_objects, key=lambda obj: obj[2] * obj[3], reverse=True)
+        return valid_objects
+\end{lstlisting}
+
+\subsubsection{Visual Distance Estimation (\textit{distance\_estimator.py})}
+The vision system is also equipped with the ability to estimate the physical distance of objects from the camera utilizing the pinhole camera perspective projection model (\textit{pinhole camera model}). The relationship between the pixel size of the object on the camera sensor and its physical distance is inversely proportional. The physical distance of the object ($D$) is estimated using the following mathematical equation:
+\begin{equation}
+    D = \frac{W_{\text{ref}} \times D_{\text{ref}}}{w}
+    \label{eq:distance_estimation}
+\end{equation}
+where:
+\begin{itemize}
+    \item $D$ is the estimated physical distance of the object from the camera (in cm).
+    \item $W_{\text{ref}}$ is the width of the reference object in pixels in the image when the calibration process was performed.
+    \item $D_{\text{ref}}$ is the actual physical reference distance from the camera to the object when the calibration process was performed (in cm).
+    \item $w$ is the width dimension of the object's bounding box in pixels in the current frame.
+\end{itemize}
+The initial calibration values, namely $W_{\text{ref}}$ and $D_{\text{ref}}$, are stored persistently in the configuration file \texttt{kalibrasi\_jarak.txt} so that the system can use them immediately when restarted. The distance estimation implementation code can be seen in Listing~\ref{lst:distance_estimator}.
+
+\begin{lstlisting}[language=Python, caption={Distance Estimator Module Code (distance\_estimator.py)}, label={lst:distance_estimator}]
+import os
+
+class DistanceEstimator:
+    def __init__(self, file_path="kalibrasi_jarak.txt"):
+        self.file_path = file_path
+        self.reference_pixel_width = 0.0
+        self.known_distance = 0.0
+        self.is_calibrated = False
+        self.load_calibration()
+
+    def load_calibration(self):
+        if os.path.exists(self.file_path):
+            try:
+                with open(self.file_path, "r") as f:
+                    lines = f.readlines()
+                    if len(lines) >= 2:
+                        self.reference_pixel_width = float(lines[0].strip())
+                        self.known_distance = float(lines[1].strip())
+                        self.is_calibrated = True
+                        print(f"[DISTANCE] Calibration loaded: {self.reference_pixel_width}px at {self.known_distance}cm")
+            except Exception as e:
+                print(f"[DISTANCE] Failed to load calibration file: {e}")
+
+    def calibrate(self, known_distance, pixel_width):
+        if known_distance > 0 and pixel_width > 0:
+            self.reference_pixel_width = pixel_width
+            self.known_distance = known_distance
+            self.is_calibrated = True
+            try:
+                with open(self.file_path, "w") as f:
+                    f.write(f"{pixel_width}\n{known_distance}\n")
+                print(f"[DISTANCE] Calibration saved: {pixel_width}px at {known_distance}cm")
+            except Exception as e:
+                print(f"[DISTANCE] Failed to save calibration file: {e}")
+            return True
+        return False
+
+    def estimate_distance(self, pixel_width):
+        if not self.is_calibrated or pixel_width <= 0:
+            return 0.0
+            
+        # Simplified distance formula: D_new = (Initial_Pixel * Initial_Distance) / New_Pixel
+        distance = (self.reference_pixel_width * self.known_distance) / pixel_width
+        return round(distance, 1)
+\end{lstlisting}
+
+\subsubsection{Service Integration and Calibration (\textit{calibration\_service.py} \& \textit{stream\_service.py})}
+This visual system runs as a local web server service based on Flask API at the URL address \texttt{http://127.0.0.1:5000}. This service facilitates user interaction to dynamically define and select target objects using a web interface.
+
+The target selection mechanism is carried out as follows:
+\begin{enumerate}
+    \item \textbf{Discovery Mode (Initialization):} In this initial mode, the system has not yet locked onto a specific target color. The camera feed displays guidance text instructing the user to click directly on the target object on the screen.
+    \item \textbf{Color Sampling (User Click):} When the user clicks on the pixel coordinates $(x, y)$ of the target object in the web browser, these coordinates are sent to the web API server via a POST request to the \texttt{/api/calibrate-color} endpoint. The \texttt{CalibrationService} then extracts a $10 \times 10$ pixel ROI (\textit{Region of Interest}) around those coordinates from the current HSV frame.
+    \item \textbf{HSV Tolerance Calculation:} The average Hue ($H_{\text{avg}}$), Saturation ($S_{\text{avg}}$), and Value ($V_{\text{avg}}$) values of the ROI are calculated, and a tolerance range is applied to keep the detection stable under varying illumination conditions:
+    \begin{equation}
+        H_{\text{lower/upper}} = H_{\text{avg}} \pm 15, \quad S_{\text{lower/upper}} = S_{\text{avg}} \pm 60, \quad V_{\text{lower/upper}} = V_{\text{avg}} \pm 60
+    \end{equation}
+    This tolerance range is automatically saved as the active target color filter parameter.
+    \item \textbf{Tracking Mode (Tracking):} Once the target color has been successfully calibrated, the system transitions from \textbf{Discovery Mode} to \textbf{Tracking Mode} to track the movements of the target and obstacles based on the color mask.
 \end{enumerate}
 
-The vision data is returned in JSON format containing bounding box coordinates. The primary parameters used by the navigation loop are the horizontal center coordinate ($x_{\text{objek}}$) to determine deviation, and the width ($w$) and height ($h$) to calculate the bounding box area ($A = w \times h$) as a visual estimate of distance.
+The implementation code of this color calibration and detection service can be seen in Listing~\ref{lst:calibration_service}.
+
+\begin{lstlisting}[language=Python, caption={Calibration Service Module Code (calibration\_service.py)}, label={lst:calibration_service}]
+import numpy as np
+import cv2
+from robot_vision_module.distance_estimator import DistanceEstimator
+
+class CalibrationService:
+    def __init__(self):
+        self.mode = "DISCOVERY" # Initial mode is to search for any object
+        self.target_lower = np.array([0, 0, 0])
+        self.target_upper = np.array([180, 255, 255])
+        self.is_calibrated = False
+        self.last_discovery_objects = []
+        
+        self.distance_estimator = DistanceEstimator()
+        self.last_target_bbox = None
+        self.latest_objects_data = []
+
+    def calibrate_color(self, frame, x, y):
+        h, w = frame.shape[:2]
+        if x < 0 or x >= w or y < 0 or y >= h:
+            return False
+
+        # Sample from a small area around the click point (to be more representative)
+        y_min, y_max = max(0, y-5), min(h, y+5)
+        x_min, x_max = max(0, x-5), min(w, x+5)
+        roi = frame[y_min:y_max, x_min:x_max]
+        
+        hsv_roi = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+        
+        # Color average
+        if hsv_roi.size > 0:
+            avg_hsv = np.average(np.average(hsv_roi, axis=0), axis=0)
+        else:
+            return False
+            
+        hue, sat, val = avg_hsv[0], avg_hsv[1], avg_hsv[2]
+        
+        # Tolerance
+        lower_hue = max(0, hue - 15)
+        upper_hue = min(180, hue + 15)
+        
+        lower_sat = max(50, sat - 60) 
+        upper_sat = min(255, sat + 60)
+        
+        lower_val = max(50, val - 60) 
+        upper_val = min(255, val + 60)
+
+        self.target_lower = np.array([lower_hue, lower_sat, lower_val])
+        self.target_upper = np.array([upper_hue, upper_sat, upper_val])
+        self.mode = "TRACKING"
+        self.is_calibrated = True
+
+        print(f"[CALIBRATION] Click ({x}, {y}) | AVG HSV: {avg_hsv}")
+        return True
+
+    def calibrate_distance(self, known_distance):
+        if self.last_target_bbox is not None:
+            _, _, w, _ = self.last_target_bbox
+            success = self.distance_estimator.calibrate(known_distance, w)
+            if success:
+                print(f"[DISTANCE CALIBRATION] Success! Pixel {w}px = {known_distance}cm")
+            return success
+        return False
+        
+    def reset_mode(self):
+        self.mode = "DISCOVERY"
+\end{lstlisting}
+
+This Flask web API service exposes the following main functional endpoints:
+\begin{itemize}
+    \item \texttt{/video\_feed}: Streams a real-time bounding box-annotated video feed (\textit{video stream}) to the web-based user interface using the \textit{Multipart JPEG} (MJPEG) format supplied by \texttt{stream\_service.py}.
+    \item \texttt{/api/objects}: Returns the target x-axis center coordinates ($x_{\text{target}}$) and visual obstacles, bounding boxes, and visual distance estimation results in JSON format to be accessed by the robot's main steering script.
+\end{itemize}
 
 \subsection{Control Logic and Navigation (Logic)}
 The control logic represents the decision-making core running on the Raspberry Pi. The navigation software is implemented in Python 3 with a modular design consisting of three primary scripts: \texttt{motor\_}\allowbreak\texttt{manager.py}, \texttt{ultrasonic\_}\allowbreak\texttt{manager.py}, and \texttt{navigator.py}.
