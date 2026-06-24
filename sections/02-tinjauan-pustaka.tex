@@ -1,18 +1,11 @@
 \section{Tinjauan Pustaka}
 \label{sec:tinjauan_pustaka}
 
-Bagian ini memaparkan teori dasar yang mendukung pengerjaan proyek robotika ini. Teori-teori ini mencakup sensor yang digunakan, sistem kendali, serta algoritma kecerdasan buatan yang ditanamkan pada robot.
+Autonomous navigation requires robust obstacle avoidance mechanisms, which have been widely addressed in recent literature through various advanced control strategies. For instance, Yan et al. propose a multi-layered approach for unmanned vehicles that combines the A* algorithm for global static path planning with the Velocity-Obstacle (VO) method to dynamically evade moving targets \cite{9734642}.
+This highlights the necessity of hybrid, global-local systems to ensure navigational safety in complex dynamic environments.
 
-\subsection{Sistem Kendali Robot (Intelligent Controls)}
-Sistem kontrol pada robot sering menggunakan algoritma seperti Proportional-Integral-Derivative (PID), Fuzzy Logic, atau kecerdasan buatan lainnya. Kontrol cerdas ini memungkinkan robot untuk mengambil keputusan secara dinamis berdasarkan data sensor secara real-time.
+Other studies focus on optimizing real-time reactive avoidance models. Zhang et al. introduce an improved Artificial Potential Field (APF) method that incorporates the velocity information of moving obstacles to prevent unreasonably long evasion paths, while also solving the unreachable target problem common in traditional APF algorithms \cite{10409720}.
+Furthermore, for high-speed driving scenarios, Kim et al. utilize a Real-Time Output Constraints Model Predictive Control (RCMPC) algorithm, which optimizes the avoidance path to significantly reduce computation time while ensuring safety and smooth maneuverability \cite{8571463}.
 
-\subsection{Sensor Jarak dan Penginderaan Lingkungan}
-Untuk menavigasi lingkungan, robot dilengkapi dengan sensor jarak seperti Ultrasonik (HC-SR04), LiDAR, atau kamera. Persamaan dasar perhitungan jarak pada sensor ultrasonik adalah:
-\begin{equation}
-    s = \frac{v \times t}{2}
-    \label{eq:ultrasonic}
-\end{equation}
-di mana $s$ adalah jarak objek (meter), $v$ adalah kecepatan rambat suara di udara ($\approx 340$ m/s), dan $t$ adalah waktu tempuh gelombang pantul (detik).
-
-\subsection{Platform Mikrokontroler / Single Board Computer}
-Robot ini menggunakan platform mikrokontroler [tuliskan nama board, misal: Arduino Uno, ESP32, Raspberry Pi, Jetson Nano] sebagai unit pemroses utama. Unit ini bertugas membaca data input dari sensor, melakukan pemrosesan algoritma navigasi, dan memberikan sinyal kendali PWM (Pulse Width Modulation) ke driver motor.
+Building upon these foundational concepts of real-time perception and reactive control, the robotic system described in the main project report implements an efficient, low-cost alternative for indoor autonomous navigation. Rather than relying on computationally heavy path-planning algorithms, it successfully integrates a monocular webcam for color-based target tracking and an ultrasonic sensor for direct frontal obstacle detection.
+By feeding this sensory data into a proportional-integral-derivative (PID) controller and a sequential finite state machine, the robot can dynamically pursue its target and reactively steer clear of obstacles with minimal computational overhead.

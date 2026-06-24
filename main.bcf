@@ -2373,7 +2373,16 @@
     <bcf:datasource type="file" datatype="bibtex" glob="false">references.bib</bcf:datasource>
   </bcf:bibdata>
   <bcf:section number="0">
-    <bcf:citekey order="1" intorder="1">author2026example</bcf:citekey>
+    <bcf:citekey order="1" intorder="1">liu2024sensing</bcf:citekey>
+    <bcf:citekey order="2" intorder="1">wang2021monocular</bcf:citekey>
+    <bcf:citekey order="3" intorder="1">dang2023obstacle</bcf:citekey>
+    <bcf:citekey order="4" intorder="1">jin2022target</bcf:citekey>
+    <bcf:citekey order="5" intorder="1">yasin2021ultrasonic</bcf:citekey>
+    <bcf:citekey order="6" intorder="1">wang2021monocular</bcf:citekey>
+    <bcf:citekey order="6" intorder="2">dang2023obstacle</bcf:citekey>
+    <bcf:citekey order="7" intorder="1">9734642</bcf:citekey>
+    <bcf:citekey order="8" intorder="1">10409720</bcf:citekey>
+    <bcf:citekey order="9" intorder="1">8571463</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="none">

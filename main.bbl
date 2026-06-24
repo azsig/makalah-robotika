@@ -19,41 +19,372 @@
 
 \refsection{0}
   \datalist[entry]{none/global//global/global/global}
-    \entry{author2026example}{article}{}{}
-      \name{author}{2}{}{%
-        {{hash=06f03ba65016a7abf077ffef4bff0527}{%
-           family={Pratama},
-           familyi={P\bibinitperiod},
-           given={Adi},
-           giveni={A\bibinitperiod}}}%
-        {{hash=60dbb55a0b527982b021fcd4944ba79d}{%
-           family={Wijaya},
+    \entry{liu2024sensing}{article}{}{}
+      \name{author}{5}{}{%
+        {{hash=93c82128aca25c57cfb17e90d02136d5}{%
+           family={Liu},
+           familyi={L\bibinitperiod},
+           given={Yu},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=5bfcebdfe4c104a8225a96f2ea190223}{%
+           family={Wang},
            familyi={W\bibinitperiod},
-           given={Budi},
-           giveni={B\bibinitperiod}}}%
+           given={Shuting},
+           giveni={S\bibinitperiod}}}%
+        {{hash=9ea70f526b55253485dbad004d912c2f}{%
+           family={Xie},
+           familyi={X\bibinitperiod},
+           given={Yuanlong},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=6227ca2f74edcf8c3d9f3db08cefb971}{%
+           family={Xiong},
+           familyi={X\bibinitperiod},
+           given={Tifan},
+           giveni={T\bibinitperiod}}}%
+        {{hash=d41020b731cec769e94624759d2b3ede}{%
+           family={Wu},
+           familyi={W\bibinitperiod},
+           given={Mingyuan},
+           giveni={M\bibinitperiod}}}%
       }
-      \strng{namehash}{02b9f6f39244dd9385471281c48a4128}
-      \strng{fullhash}{02b9f6f39244dd9385471281c48a4128}
-      \strng{fullhashraw}{02b9f6f39244dd9385471281c48a4128}
-      \strng{bibnamehash}{02b9f6f39244dd9385471281c48a4128}
-      \strng{authorbibnamehash}{02b9f6f39244dd9385471281c48a4128}
-      \strng{authornamehash}{02b9f6f39244dd9385471281c48a4128}
-      \strng{authorfullhash}{02b9f6f39244dd9385471281c48a4128}
-      \strng{authorfullhashraw}{02b9f6f39244dd9385471281c48a4128}
+      \strng{namehash}{9e1be451eb802292c7c1ac04e6e14a1e}
+      \strng{fullhash}{58b3000b49a54d410eec00fccaaeabc6}
+      \strng{fullhashraw}{58b3000b49a54d410eec00fccaaeabc6}
+      \strng{bibnamehash}{9e1be451eb802292c7c1ac04e6e14a1e}
+      \strng{authorbibnamehash}{9e1be451eb802292c7c1ac04e6e14a1e}
+      \strng{authornamehash}{9e1be451eb802292c7c1ac04e6e14a1e}
+      \strng{authorfullhash}{58b3000b49a54d410eec00fccaaeabc6}
+      \strng{authorfullhashraw}{58b3000b49a54d410eec00fccaaeabc6}
       \field{sortinit}{1}
       \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{journaltitle}{Jurnal Teknologi Robotika Indonesia}
-      \field{number}{2}
-      \field{title}{Desain dan Implementasi Robot Otonom untuk Navigasi Cerdas di Lingkungan Dinamis}
-      \field{volume}{12}
-      \field{year}{2026}
-      \field{pages}{45\bibrangedash 53}
-      \range{pages}{9}
+      \field{journaltitle}{Sensors}
+      \field{number}{4}
+      \field{title}{A Review of Sensing Technologies for Indoor Autonomous Mobile Robots}
+      \field{volume}{24}
+      \field{year}{2024}
+      \field{pages}{1222}
+      \range{pages}{1}
       \verb{doi}
-      \verb 10.12345/jtri.v12i2.6789
+      \verb 10.3390/s24041222
       \endverb
+    \endentry
+    \entry{wang2021monocular}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=79e4ccc1348ada5b819064a4339c946f}{%
+           family={Wang},
+           familyi={W\bibinitperiod},
+           given={Shubo},
+           giveni={S\bibinitperiod}}}%
+        {{hash=5de94cdd2b4ff3e0eb435107f54862f4}{%
+           family={Wang},
+           familyi={W\bibinitperiod},
+           given={Ling},
+           giveni={L\bibinitperiod}}}%
+        {{hash=795a87032ae9dc9c847f71d1982ac1e8}{%
+           family={He},
+           familyi={H\bibinitperiod},
+           given={Xiongkui},
+           giveni={X\bibinitperiod}}}%
+        {{hash=5d448c7ef3c89e7138522e57768e1ed5}{%
+           family={Cao},
+           familyi={C\bibinitperiod},
+           given={Yi},
+           giveni={Y\bibinitperiod}}}%
+      }
+      \strng{namehash}{ac11e4bb385d1a031df5538e2c5e86f8}
+      \strng{fullhash}{cbac66ffab1bd6037659895e42a87fbc}
+      \strng{fullhashraw}{cbac66ffab1bd6037659895e42a87fbc}
+      \strng{bibnamehash}{ac11e4bb385d1a031df5538e2c5e86f8}
+      \strng{authorbibnamehash}{ac11e4bb385d1a031df5538e2c5e86f8}
+      \strng{authornamehash}{ac11e4bb385d1a031df5538e2c5e86f8}
+      \strng{authorfullhash}{cbac66ffab1bd6037659895e42a87fbc}
+      \strng{authorfullhashraw}{cbac66ffab1bd6037659895e42a87fbc}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Drones}
+      \field{number}{4}
+      \field{title}{A Monocular Vision Obstacle Avoidance Method Applied to Indoor Tracking Robot}
+      \field{volume}{5}
+      \field{year}{2021}
+      \field{pages}{105}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.3390/drones5040105
+      \endverb
+    \endentry
+    \entry{dang2023obstacle}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=40d7cb0037f5ee9a04c010438c4876b8}{%
+           family={Dang},
+           familyi={D\bibinitperiod},
+           given={Thai\bibnamedelima Viet},
+           giveni={T\bibinitperiod\bibinitdelim V\bibinitperiod}}}%
+        {{hash=d1c9c9b2d1a8367e10c29d85f8cad26f}{%
+           family={Bui},
+           familyi={B\bibinitperiod},
+           given={Ngoc\bibnamedelima Tam},
+           giveni={N\bibinitperiod\bibinitdelim T\bibinitperiod}}}%
+      }
+      \strng{namehash}{6fa9d8429bd5447b7b9ad4639f843011}
+      \strng{fullhash}{6fa9d8429bd5447b7b9ad4639f843011}
+      \strng{fullhashraw}{6fa9d8429bd5447b7b9ad4639f843011}
+      \strng{bibnamehash}{6fa9d8429bd5447b7b9ad4639f843011}
+      \strng{authorbibnamehash}{6fa9d8429bd5447b7b9ad4639f843011}
+      \strng{authornamehash}{6fa9d8429bd5447b7b9ad4639f843011}
+      \strng{authorfullhash}{6fa9d8429bd5447b7b9ad4639f843011}
+      \strng{authorfullhashraw}{6fa9d8429bd5447b7b9ad4639f843011}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Electronics}
+      \field{number}{8}
+      \field{title}{Obstacle Avoidance Strategy for Mobile Robot Based on Monocular Camera}
+      \field{volume}{12}
+      \field{year}{2023}
+      \field{pages}{1932}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.3390/electronics12081932
+      \endverb
+    \endentry
+    \entry{jin2022target}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=ab7f4e0916d6fde4a9fec927a6b428bf}{%
+           family={Jin},
+           familyi={J\bibinitperiod},
+           given={Yingrui},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=700e2277cfc7062ef087c48b0e771ebc}{%
+           family={Wen},
+           familyi={W\bibinitperiod},
+           given={Shengjun},
+           giveni={S\bibinitperiod}}}%
+        {{hash=fa687ee25318316b0f63a0fd2652e504}{%
+           family={Shi},
+           familyi={S\bibinitperiod},
+           given={Zhaoyuan},
+           giveni={Z\bibinitperiod}}}%
+        {{hash=37668a88bb3f88a8b62ecb848309fe4e}{%
+           family={Li},
+           familyi={L\bibinitperiod},
+           given={Hengyi},
+           giveni={H\bibinitperiod}}}%
+      }
+      \strng{namehash}{2c69ee182704fd83669e91095987b09e}
+      \strng{fullhash}{bdd67f61a0253b250ceb8c003e245c0f}
+      \strng{fullhashraw}{bdd67f61a0253b250ceb8c003e245c0f}
+      \strng{bibnamehash}{2c69ee182704fd83669e91095987b09e}
+      \strng{authorbibnamehash}{2c69ee182704fd83669e91095987b09e}
+      \strng{authornamehash}{2c69ee182704fd83669e91095987b09e}
+      \strng{authorfullhash}{bdd67f61a0253b250ceb8c003e245c0f}
+      \strng{authorfullhashraw}{bdd67f61a0253b250ceb8c003e245c0f}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Applied Sciences}
+      \field{number}{17}
+      \field{title}{Target Recognition and Navigation Path Optimization Based on {NAO} Robot}
+      \field{volume}{12}
+      \field{year}{2022}
+      \field{pages}{8466}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.3390/app12178466
+      \endverb
+    \endentry
+    \entry{yasin2021ultrasonic}{article}{}{}
+      \name{author}{6}{}{%
+        {{hash=92616e73785196dcdc5b102f825c034e}{%
+           family={Yasin},
+           familyi={Y\bibinitperiod},
+           given={Jawad\bibnamedelima N.},
+           giveni={J\bibinitperiod\bibinitdelim N\bibinitperiod}}}%
+        {{hash=e1381e1f7960e12076bc217fa3742029}{%
+           family={Mohamed},
+           familyi={M\bibinitperiod},
+           given={Sherif\bibnamedelimb A.\bibnamedelimi S.},
+           giveni={S\bibinitperiod\bibinitdelim A\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+        {{hash=1bff285abbeb5f9cba4bce8f49c59c35}{%
+           family={Haghbayan},
+           familyi={H\bibinitperiod},
+           given={Mohammad-Hashem},
+           giveni={M\bibinithyphendelim H\bibinitperiod}}}%
+        {{hash=0f3f5da1b4ef38b1e57b9f56c86d8cec}{%
+           family={Heikkonen},
+           familyi={H\bibinitperiod},
+           given={Jukka},
+           giveni={J\bibinitperiod}}}%
+        {{hash=0146491c1686471470d4763516e431be}{%
+           family={Tenhunen},
+           familyi={T\bibinitperiod},
+           given={Hannu},
+           giveni={H\bibinitperiod}}}%
+        {{hash=dabb0c3253fb212db9dc15f45a53bcbd}{%
+           family={Plosila},
+           familyi={P\bibinitperiod},
+           given={Juha},
+           giveni={J\bibinitperiod}}}%
+      }
+      \strng{namehash}{3619351e4627846b6c85e70a0eae1b70}
+      \strng{fullhash}{41df4a9fd70eea09c03e4a58d1bee15f}
+      \strng{fullhashraw}{41df4a9fd70eea09c03e4a58d1bee15f}
+      \strng{bibnamehash}{3619351e4627846b6c85e70a0eae1b70}
+      \strng{authorbibnamehash}{3619351e4627846b6c85e70a0eae1b70}
+      \strng{authornamehash}{3619351e4627846b6c85e70a0eae1b70}
+      \strng{authorfullhash}{41df4a9fd70eea09c03e4a58d1bee15f}
+      \strng{authorfullhashraw}{41df4a9fd70eea09c03e4a58d1bee15f}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{International Journal of Information Technology}
+      \field{title}{Low-Cost Ultrasonic Based Object Detection and Collision Avoidance Method for Autonomous Robots}
+      \field{volume}{13}
+      \field{year}{2021}
+      \field{pages}{97\bibrangedash 107}
+      \range{pages}{11}
+      \verb{doi}
+      \verb 10.1007/s41870-020-00513-w
+      \endverb
+    \endentry
+    \entry{9734642}{inproceedings}{}{}
+      \name{author}{5}{}{%
+        {{hash=6cce0257806b5cf943bde78d323b73ee}{%
+           family={Yan},
+           familyi={Y\bibinitperiod},
+           given={Hongzhou},
+           giveni={H\bibinitperiod}}}%
+        {{hash=30570ccb5915d76231382b5be71ab253}{%
+           family={Zhu},
+           familyi={Z\bibinitperiod},
+           given={Qige},
+           giveni={Q\bibinitperiod}}}%
+        {{hash=614fdf51ce9628d993d9e0dc779c15a2}{%
+           family={Zhang},
+           familyi={Z\bibinitperiod},
+           given={Yifan},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=e24bcca01cf5890a6b9ac6ccb5b492f8}{%
+           family={Li},
+           familyi={L\bibinitperiod},
+           given={Zhe},
+           giveni={Z\bibinitperiod}}}%
+        {{hash=cb4d64a9ce926663f6a7a135f7746381}{%
+           family={Du},
+           familyi={D\bibinitperiod},
+           given={Xiaojia},
+           giveni={X\bibinitperiod}}}%
+      }
+      \strng{namehash}{49890ead185477f06e2e68015a1767a9}
+      \strng{fullhash}{cfbe9521e9a901bb74f636ca61f1f107}
+      \strng{fullhashraw}{cfbe9521e9a901bb74f636ca61f1f107}
+      \strng{bibnamehash}{49890ead185477f06e2e68015a1767a9}
+      \strng{authorbibnamehash}{49890ead185477f06e2e68015a1767a9}
+      \strng{authornamehash}{49890ead185477f06e2e68015a1767a9}
+      \strng{authorfullhash}{cfbe9521e9a901bb74f636ca61f1f107}
+      \strng{authorfullhashraw}{cfbe9521e9a901bb74f636ca61f1f107}
+      \field{sortinit}{7}
+      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{2022 IEEE 6th Information Technology and Mechatronics Engineering Conference (ITOEC)}
+      \field{title}{An Obstacle Avoidance Algorithm for Unmanned Surface Vehicle Based on A Star and Velocity-Obstacle Algorithms}
+      \field{volume}{6}
+      \field{year}{2022}
+      \field{pages}{77\bibrangedash 82}
+      \range{pages}{6}
+      \verb{doi}
+      \verb 10.1109/ITOEC53115.2022.9734642
+      \endverb
+      \keyw{Sea surface;Heuristic algorithms;Path planning;Sensors;Safety;Security;Collision avoidance;A star algorithm;VO algorithm;Obstacle Avoidance Algorithm;USV}
+    \endentry
+    \entry{10409720}{inproceedings}{}{}
+      \name{author}{4}{}{%
+        {{hash=3a9cbe10f0fda472400388288c74f3d2}{%
+           family={Zhang},
+           familyi={Z\bibinitperiod},
+           given={Ziming},
+           giveni={Z\bibinitperiod}}}%
+        {{hash=1fbecbf0a8d7c8f4f26375ea5f49cffc}{%
+           family={Jia},
+           familyi={J\bibinitperiod},
+           given={Ruixuan},
+           giveni={R\bibinitperiod}}}%
+        {{hash=e88ebcf30c031ae9c4ee7f8334da3875}{%
+           family={Chen},
+           familyi={C\bibinitperiod},
+           given={Xiaoming},
+           giveni={X\bibinitperiod}}}%
+        {{hash=b0142517f09082f8a2432b21540e3fd0}{%
+           family={Shao},
+           familyi={S\bibinitperiod},
+           given={Shuyi},
+           giveni={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{505a5770718e7568629fa495e252d381}
+      \strng{fullhash}{9a4a216a8552878738c2d81c90ace42a}
+      \strng{fullhashraw}{9a4a216a8552878738c2d81c90ace42a}
+      \strng{bibnamehash}{505a5770718e7568629fa495e252d381}
+      \strng{authorbibnamehash}{505a5770718e7568629fa495e252d381}
+      \strng{authornamehash}{505a5770718e7568629fa495e252d381}
+      \strng{authorfullhash}{9a4a216a8552878738c2d81c90ace42a}
+      \strng{authorfullhashraw}{9a4a216a8552878738c2d81c90ace42a}
+      \field{sortinit}{8}
+      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{2023 7th International Symposium on Computer Science and Intelligent Control (ISCSIC)}
+      \field{title}{Dynamic Obstacle Avoidance Path Planning of Unmanned Vehicle Based on Improved APF}
+      \field{year}{2023}
+      \field{pages}{135\bibrangedash 140}
+      \range{pages}{6}
+      \verb{doi}
+      \verb 10.1109/ISCSIC60498.2023.00037
+      \endverb
+      \keyw{Heuristic algorithms;Path planning;Planning;Vehicle dynamics;Collision avoidance;Autonomous vehicles;Intelligent control;APF;dynamic obstacle avoidance;path planning}
+    \endentry
+    \entry{8571463}{inproceedings}{}{}
+      \name{author}{3}{}{%
+        {{hash=f7b8749fd9c0de54c6e64be080df1a0f}{%
+           family={Kim},
+           familyi={K\bibinitperiod},
+           given={Ji\bibnamedelima Chang},
+           giveni={J\bibinitperiod\bibinitdelim C\bibinitperiod}}}%
+        {{hash=33c941f6abb4869c7de9c44f92ccbd56}{%
+           family={Pae},
+           familyi={P\bibinitperiod},
+           given={Dong\bibnamedelima Sung},
+           giveni={D\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+        {{hash=f6a3c7eb8b176891cfef49f4710f79ff}{%
+           family={Lim},
+           familyi={L\bibinitperiod},
+           given={Myo\bibnamedelima Taeg},
+           giveni={M\bibinitperiod\bibinitdelim T\bibinitperiod}}}%
+      }
+      \strng{namehash}{ce0ecccdaa6eec5c03a3a11bfa4a83ed}
+      \strng{fullhash}{ce0ecccdaa6eec5c03a3a11bfa4a83ed}
+      \strng{fullhashraw}{ce0ecccdaa6eec5c03a3a11bfa4a83ed}
+      \strng{bibnamehash}{ce0ecccdaa6eec5c03a3a11bfa4a83ed}
+      \strng{authorbibnamehash}{ce0ecccdaa6eec5c03a3a11bfa4a83ed}
+      \strng{authornamehash}{ce0ecccdaa6eec5c03a3a11bfa4a83ed}
+      \strng{authorfullhash}{ce0ecccdaa6eec5c03a3a11bfa4a83ed}
+      \strng{authorfullhashraw}{ce0ecccdaa6eec5c03a3a11bfa4a83ed}
+      \field{sortinit}{9}
+      \field{sortinithash}{0a5ebc79d83c96b6579069544c73c7d4}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{2018 18th International Conference on Control, Automation and Systems (ICCAS)}
+      \field{title}{Obstacle Avoidance Path Planning Algorithm Based on Model Predictive Control}
+      \field{year}{2018}
+      \field{pages}{141\bibrangedash 143}
+      \range{pages}{3}
+      \keyw{Prediction algorithms;Mathematical model;Heuristic algorithms;Predictive control;Collision avoidance;Computational modeling;Predictive models;Model Predictive Control;Obstacle Avoidance;Path Planning;Comfort Level}
     \endentry
   \enddatalist
 \endrefsection
