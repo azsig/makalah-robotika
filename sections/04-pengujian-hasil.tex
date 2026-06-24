@@ -1,12 +1,16 @@
-\section{Pengujian dan Hasil Pembahasan}
+\section{Experimental Results and Discussion}
 \label{sec:pengujian_hasil}
 
-Pengujian dilakukan untuk mengukur keandalan sistem robotika yang telah dirancang. Pengujian mencakup kalibrasi akurasi sensor jarak serta pengujian navigasi pada lintasan uji coba.
+Testing was conducted to measure the reliability of the designed robotic system. The evaluation covers DC motor speed calibration, ultrasonic sensor accuracy and stability, sequential navigation performance on the track layout, close-range collision avoidance behavior, and webcam exposure constraints.
 
-\subsection{Pengujian Akurasi Sensor Jarak}
-Pengujian sensor dilakukan dengan membandingkan nilai jarak pembacaan sensor ultrasonik dengan jarak pengukuran manual menggunakan penggaris. Hasil pengujian ditunjukkan pada Tabel~\ref{tab:pengujian_sensor}.
+\subsection{DC Motor Speed Calibration and Path Alignment}
+Before starting the navigation trials on the track, the DC motor drive response was evaluated. Based on initial test runs without calibration, the robot tended to veer (turn) to the right when given identical PWM forward commands. This behavior was caused by physical chassis weight imbalances and lower rotation efficiency of the left motor relative to the right motor.
 
-% Contoh penulisan tabel standar profesional (booktabs)
+To resolve this issue, a left-wheel speed multiplier (\texttt{left\_bias}) of $1.14$ was implemented in the \texttt{MotorManager} class, as designed in Chapter~\ref{sec:perancangan_sistem} (Listing~\ref{lst:motor_manager}). After applying this calibration parameter, the left motor speed was scaled proportionally, allowing the robot to travel straight on the track stably without significant direction drift.
+
+\subsection{Ultrasonic Sensor Accuracy and Fluctuation Testing}
+The HC-SR04 ultrasonic distance sensor accuracy was evaluated by comparing its readings against manual physical reference measurements using a ruler. The test results are shown in Table~\ref{tab:pengujian_sensor}.
+
 \begin{table}[H]
     \centering
     \caption{Data Pengujian Akurasi Sensor Jarak Ultrasonik HC-SR04.}
@@ -26,7 +30,35 @@ Pengujian sensor dilakukan dengan membandingkan nilai jarak pembacaan sensor ult
     \end{tabular}
 \end{table}
 
-Berdasarkan Tabel~\ref{tab:pengujian_sensor}, terlihat bahwa sensor ultrasonik memiliki rata-rata error sebesar $0.93\%$, yang mana masih berada di bawah ambang batas toleransi sistem kendali ($5\%$), sehingga sensor dinyatakan layak digunakan untuk sistem navigasi robot.
+Based on the data in Table~\ref{tab:pengujian_sensor}, the ultrasonic sensor exhibits a low average error of $0.93\%$ in static conditions. The theoretical distance calculation refers to Equation~\eqref{eq:ultrasonic} in Bab~\ref{sec:tinjauan_pustaka}. 
 
-\subsection{Analisis Pengujian Navigasi}
-Setelah dilakukan kalibrasi sensor, pengujian dilanjutkan dengan mengamati respon robot dalam mendeteksi penghalang di depannya. Robot berhasil mendeteksi dinding penghalang pada jarak $\approx 20$ cm dan melakukan manuver belok kanan secara otomatis untuk menghindari tabrakan. Eksperimen dilakukan sebanyak 10 kali lintasan dengan persentase keberhasilan navigasi sebesar $90\%$.
+However, during initial dynamic trials before calibration, the raw sensor readings fluctuated significantly due to multi-path reflections of sound waves. The sensor readings frequently dropped to a few centimeters randomly. This fluctuation falsely triggered the *Obstacle Avoidance* state, causing the robot to reverse erratically without obstacles in front of it. 
+
+This issue was resolved by implementing a 3-sample moving average filter with a 10 ms sampling interval in the \texttt{UltrasonicManager} module (Listing~\ref{lst:ultrasonic_manager}). The filter effectively smoothed out the noise, stabilizing the robot's movement.
+
+\subsection{Sequential Navigation Performance Analysis on the Track}
+The autonomous navigation was evaluated on the test track shown in Figure~\ref{fig:lintasan}. The final objective was to reach the finish line, represented by a randomly chosen color-coded RGB (Red, Green, Blue) target in each trial.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{lintasan.png}
+    \caption{Robotic Navigation Test Track Layout.}
+    \label{fig:lintasan}
+\end{figure}
+
+The navigation results demonstrated that the robot successfully tracked the path and detected the RGB target at the finish line. However, the movement was notably rigid (stiff). This behavior is a direct consequence of the sequential control loop logic, which pauses the robot for 0.1s (State 2 in Chapter~\ref{sec:perancangan_sistem}) before taking each frame to prevent motion blur. The absence of motion blur is crucial for the Flask API to accurately extract the target coordinates.
+
+\subsection{Obstacle Evasion and Physical Track Boundary Challenges}
+The close-range collision avoidance logic (State 1) using the ultrasonic sensor worked reliably. When the sensor detected an obstacle at a distance $\le 15$ cm, the robot stopped, backed up at \texttt{-V\_SLOW} for 0.5s, and turned away for 0.3s.
+
+However, several operational challenges were observed during the track trials:
+\begin{enumerate}
+    \item \textbf{Border Deviation and Nudging:} The robot occasionally drifted toward the track boundaries. This occurred because the webcam detected colored borders or obstacles at the margins (such as the Orange, Yellow, or Magenta squares in Figure~\ref{fig:lintasan}) as target (\texttt{TARGET}) or obstacle (\texttt{OBSTACLE}) contours, causing the robot to turn toward them. Since the robot lacked an absolute direction reference (heading), it easily got distracted. To complete the run, a slight manual nudge (physical intervention) was required to re-align the robot's heading with the center path.
+    \item \textbf{Side Collision/Scraping:} Due to the wide chassis dimension of the robot, it occasionally scraped obstacles when turning. This happened because once the obstacle went outside the camera's horizontal FOV ($160 \pm 75$ pixels), the robot assumed it was cleared, whereas the side of the robot's body had not physically passed it yet.
+    \item \textbf{Lack of Orientation Sensors (IMU/Compass):} The robot lacked an Inertial Measurement Unit (IMU) or digital Compass. Consequently, it had no absolute direction awareness (heading) and only moved reactively based on active camera tracking.
+\end{enumerate}
+
+\subsection{Webcam Color Stability and Exposure Constraints}
+Evaluation of the visual subsystem revealed limitations under sudden illumination changes. When the camera frame was filled with a single close-up color (e.g., when approaching the Orange or Magenta obstacles on the track in Figure~\ref{fig:lintasan}), the camera's auto-exposure and auto-white-balance adjusted automatically.
+
+This auto-gain adaptation shifted the image saturation and color coordinates, misclassifying the Orange or Magenta squares as the main target color (Red, Green, or Blue). When the robot subsequently turned, it suffered from temporary detection lag while the webcam adapted back to the environment's ambient lighting.

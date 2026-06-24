@@ -1,384 +1,52 @@
-\section{Perancangan Sistem}
+\section{System Design}
 \label{sec:perancangan_sistem}
 
-Pada bab ini dijelaskan arsitektur perancangan sistem robotika secara menyeluruh, yang terbagi menjadi perancangan perangkat keras (hardware), perancangan sistem visual (visi komputer), dan perancangan logika kontrol navigasi (logic).
+This chapter describes the comprehensive robotic system design architecture, which is divided into hardware configuration, computer vision subsystem, and navigation control logic.
 
 \subsection{Hardware Architecture}
-\label{subsec:hardware_architecture}
-
-The hardware architecture of the autonomous color-tracking robot is designed as an integrated embedded robotic platform. Conceptually, this system is divided into four main functional blocks: the processing and control unit, the sensing system, the actuation mechanism, and the power distribution topology. The data flow, control signals, and power distribution among these functional blocks are represented by the high-level architecture diagram in Figure \ref{fig:diagram_hardware}.
+The robot is designed based on a Raspberry Pi Single Board Computer (SBC) as the central processing unit. The hardware configuration consists of a mechanical chassis, DC drive motors controlled by an L298N driver, an HC-SR04 ultrasonic distance sensor for close-range obstacle detection, and a USB webcam as the primary visual sensor. The block diagram of the hardware system is shown in Figure~\ref{fig:block_diagram}.
 
 \begin{figure}[H]
     \centering
-    % Ensure the file name matches your repository
-    \includegraphics[width=0.7\textwidth]{block_diagram.jpg} 
-    \caption{Block diagram of the hardware architecture and control signal flow.}
-    \label{fig:diagram_hardware}
+    \includegraphics[width=0.8\textwidth]{block_diagram.jpg}
+    \caption{Robotic Hardware Architecture Block Diagram.}
+    \label{fig:block_diagram}
 \end{figure}
 
-\subsubsection{Processing and Control Unit}
-The core computational and control operations of the entire system rely on a Raspberry Pi 3 Model B Single-Board Computer (SBC). The use of this SBC is essential to provide the considerable computational resources required to execute the OpenCV-based image processing algorithms and bounding-box generation without relying on external computing. The Raspberry Pi acts as the main processing and control unit that reads the continuous visual data stream, processes the navigation decision logic, and translates these calculations into Pulse Width Modulation (PWM) control signals. These signals are subsequently distributed through the General Purpose Input/Output (GPIO) pins to dictate the responses of the actuation system.
-
-\subsubsection{Sensing System}
-The robot's ability to perceive its surroundings and gather environmental information is realized through the integration of two distinct sensing technologies:
-\begin{itemize}
-    \item \textbf{Monocular Camera (1080p USB Webcam):} Serving as the primary visual sensor, the webcam captures light reflections from objects and converts them into RGB pixel matrices. These raw data matrices are streamed to the processing unit to be transformed into the HSV color space. This mapping is fundamental for the vision-based system, as it separates pure chromatic information (Hue) from environmental illumination intensity (Value). This enhances the robustness of the HSV-based segmentation, allowing the robot to identify the color-defined target and extract bounding boxes even under varying lighting conditions.
-    \item \textbf{Ultrasonic Sensor (HC-SR04):} Operating based on the Time-of-Flight (ToF) principle of mechanical waves, this sensor emits 40 kHz ultrasonic pulses and calculates the time elapsed until the echo is received. It is implemented as a frontal distance sensor to provide direct physical distance measurements and support reactive collision-avoidance decisions. If a frontal obstacle is detected within a critical proximity, the sensor input triggers an interrupt in the main control logic to immediately halt traction, preventing physical collisions when the visual sensor is occluded or experiences response latency.
-\end{itemize}
-
-\subsubsection{Actuation and Kinematic Control}
-The conversion of electrical control signals into mechanical torque is managed by a differential drive configuration, suitable for a two-wheeled mobile robot.
-\begin{itemize}
-    \item \textbf{L298N Motor Driver Circuit:} This module functions as a power interface bridge between the Raspberry Pi's low-voltage GPIO pins (3.3V) and the inductive load of the motors, which demands high current supply. Operating on a Dual H-Bridge circuit topology, the L298N allows dynamic voltage polarity reversal to control the direction of motion, while simultaneously switching the PWM signals from the processing unit to regulate the duty cycle (rotational speed).
-    \item \textbf{Direct Current (DC) Motors:} The final motion execution relies on two DC motors coupled to the left and right wheels of the chassis. By asynchronously varying the rotational speed distribution between the two wheels, the robot can perform skid-steering to smoothly execute required motion commands, including moving forward, turning left, turning right, stopping, and performing obstacle-avoidance maneuvers.
-\end{itemize}
-
-\subsubsection{Power Distribution Topology}
-The computational stability of the embedded platform heavily depends on the implemented power supply scheme. Because DC motors are inductive loads—prone to generating inrush currents upon starting and back-Electromotive Force (back-EMF)—the system employs a split power supply topology with an integrated common ground.
-\begin{itemize}
-    \item \textbf{Logic Power Supply:} The Raspberry Pi is exclusively powered by a closed power source (5V/3A Powerbank). Isolating this current source is crucial to maintain computational voltage stability and prevent transient voltage drops that could reset the operating system kernel when the actuators operate at maximum capacity.
-    \item \textbf{Mechanical Load Power Supply:} The L298N driver circuit and the DC motors receive power from a series configuration of two 18650 Lithium-ion batteries. The 7.4V nominal voltage from this array is injected directly into the driver's input terminals. Although the power sources are physically separated, the ground terminals (GND) of the 18650 battery circuit and the Raspberry Pi's GPIO are strictly unified. This common ground ensures that all PWM control pulses share a uniform zero-equipotential reference, guaranteeing that the operational logic is translated precisely without noise interference.
-\end{itemize}
-
-\vspace{1em}
-The physical implementation of these integrated hardware components on the mechanical chassis is shown in Figure \ref{fig:fisik_robot}. This concrete integration of functional blocks ultimately enables the mobile robot to acquire actual environmental parameters, execute lightweight object-detection methods, and perform precise kinematic maneuvers.
+Documentation of the assembled robot is placed in Figure~\ref{fig:foto_robot}. The image file should be stored inside the \texttt{figures/} directory.
 
 \begin{figure}[H]
     \centering
-    % Ensure the file name matches your repository
-    \includegraphics[width=0.7\textwidth]{gambar_robot.jpg} 
-    \caption{Physical hardware implementation on the autonomous color-tracking robot chassis.}
-    \label{fig:fisik_robot}
+    \includegraphics[width=0.6\textwidth]{gambar_robot.jpg}
+    \caption{Physical Assembly of the Mobile Robot.}
+    \label{fig:foto_robot}
 \end{figure}
 
-\subsection{Perancangan Sistem Visual (Visual)}
-Perancangan subsistem visual berfokus pada pemrosesan citra digital yang ditangkap oleh USB Webcam secara real-time. Kamera diposisikan di bagian depan robot untuk menangkap kondisi lingkungan secara langsung. Alur pemrosesan sistem visual ini terbagi menjadi empat tahap utama: akuisisi citra, prapemrosesan dan segmentasi warna (masking), deteksi kontur objek, serta estimasi jarak visual.
+\subsection{Computer Vision System (Visual)}
+The computer vision subsystem processes digital image frames captured by the front-facing USB webcam in real time. The camera stream is processed by a separate computer vision module running as a local Flask web server API at the URL \texttt{http://127.0.0.1:5000/api/objects}.
 
-\subsubsection{Akuisisi Citra dan Manajemen Kamera (\textit{camera\_manager.py})}
-Citra mentah diperoleh menggunakan USB Webcam dengan resolusi native $320 \times 240$ piksel. Format penangkapan video disetel menggunakan kompresi MJPG (\textit{Motion JPEG}) melalui driver V4L2 (\textit{Video for Linux 2}) guna meminimalkan penggunaan bandwidth USB dan beban pemrosesan pada Raspberry Pi. 
-
-Untuk menghindari hambatan (\textit{bottleneck}) pada jalannya program utama, proses pembacaan frame kamera diisolasi ke dalam utas latar belakang (\textit{background thread}) tersendiri yang berjalan secara asinkron dengan jeda waktu tunggu (sleep) sebesar $0.03$ detik antar pengambilan frame. Hal ini menjamin tersedianya frame terbaru yang siap diakses setiap saat oleh modul pemrosesan citra tanpa memblokir thread eksekusi utama. Kode implementasi manajemen kamera dapat dilihat pada Kode Program~\ref{lst:camera_manager}.
-
-\begin{lstlisting}[language=Python, caption={Kode Program Modul Manajemen Kamera (camera\_manager.py)}, label={lst:camera_manager}]
-import cv2
-import threading
-import time
-import numpy as np
-
-class CameraManager:
-    def __init__(self, src=0):
-        self.src = src
-        # Gunakan backend V4L2 yang jauh lebih stabil di Raspberry Pi/Linux
-        self.stream = cv2.VideoCapture(self.src, cv2.CAP_V4L2)
-        
-        # Set format ke MJPG untuk menghemat bandwidth USB di Raspberry Pi
-        self.stream.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
-        self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
-        self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
-        
-        self.grabbed = False
-        # Inisialisasi dengan frame hitam agar tidak None
-        self.frame = np.zeros((240, 320, 3), dtype=np.uint8)
-        self.stopped = False
-        
-        if self.stream.isOpened():
-            print(f"[CAM] Kamera {self.src} terdeteksi.")
-            # Ambil satu frame awal secara sinkron
-            self.grabbed, self.frame = self.stream.read()
-        else:
-            print(f"[CAM] [ERROR] Kamera {self.src} tidak ditemukan!")
-
-    def start(self):
-        # Jalankan pembacaan frame di background thread
-        threading.Thread(target=self.update, args=(), daemon=True).start()
-        return self
-
-    def update(self):
-        while not self.stopped:
-            if not self.stream.isOpened():
-                break
-            self.grabbed, self.frame = self.stream.read()
-            # Jeda kecil agar tidak membebani CPU
-            time.sleep(0.03)
-
-    def read(self):
-        return self.frame
-
-    def stop(self):
-        self.stopped = True
-        self.stream.release()
-
-    def switch_source(self, new_src):
-        """Mengganti input kamera secara dinamis"""
-        self.stopped = True
-        time.sleep(0.1)  # Beri jeda kecil agar thread update selesai
-        self.stream.release()
-        
-        self.src = new_src
-        self.stream = cv2.VideoCapture(self.src, cv2.CAP_V4L2)
-        self.stream.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
-        self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
-        self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
-        
-        self.grabbed = False
-        self.frame = np.zeros((240, 320, 3), dtype=np.uint8)
-        self.stopped = False
-        
-        if self.stream.isOpened():
-            print(f"[CAM] Berhasil beralih ke Kamera {self.src}")
-            self.grabbed, self.frame = self.stream.read()
-            self.start()
-            return True
-        else:
-            print(f"[CAM] [ERROR] Gagal membuka Kamera {self.src}")
-            # Nyalakan thread update kembali agar program tidak macet
-            self.start()
-            return False
-\end{lstlisting}
-
-\subsubsection{Prapemrosesan dan Segmentasi Warna (\textit{image\_processor.py})}
-Sebelum dilakukan segmentasi warna, frame citra yang bertipe BGR (\textit{Blue-Green-Red}) terlebih dahulu disaring menggunakan filter Gaussian Blur dengan ukuran kernel $11 \times 11$ piksel. Proses ini bertujuan untuk mereduksi derau (\textit{noise}) frekuensi tinggi dan menghaluskan tepi objek. Selanjutnya, ruang warna citra dikonversi dari BGR menjadi HSV (\textit{Hue, Saturation, Value}) karena ruang warna HSV lebih stabil terhadap fluktuasi intensitas cahaya lingkungan.
-
-Segmentasi objek pada modul pemrosesan citra dilakukan dengan membagi hasil thresholding warna ke dalam dua masker biner utama:
+The Flask API extracts frames, performs color segmentation, and categorizes detected contours into two main labels:
 \begin{enumerate}
-    \item \textbf{Masker Target (\textit{mask\_target}):} Masker ini memisahkan warna target berdasarkan nilai ambang batas (\textit{threshold}) warna HSV yang telah dikalibrasi sebelumnya. Rentang nilai threshold didefinisikan sebagai batas bawah ($HSV_{\text{lower}}$) dan batas atas ($HSV_{\text{upper}}$). Untuk menghilangkan noise piksel biner kecil yang terisolasi, diterapkan operasi morfologi berupa erosi (\textit{erode}) sebanyak 2 iterasi, diikuti dengan dilasi (\textit{dilate}) sebanyak 2 iterasi.
-    \item \textbf{Masker Warna Tajam (\textit{mask\_colorful}):} Masker ini digunakan untuk mendeteksi semua objek di lingkungan yang memiliki saturasi warna yang tajam (seperti kertas origami atau penanda fisik lainnya). Parameter ambang batas bawah ditentukan pada nilai $HSV = [0, 100, 80]$ dan batas atas pada $HSV = [180, 255, 255]$.
-    \item \textbf{Masker Rintangan (\textit{mask\_obstacle}):} Benda dianggap sebagai rintangan (\textit{obstacle}) jika memiliki karakteristik warna yang tajam tetapi warnanya bukan merupakan warna target. Masker rintangan diperoleh melalui operasi logika \textit{bitwise} AND antara masker warna tajam dengan negasi dari masker target:
-    \begin{equation}
-        \text{mask\_obstacle} = \text{mask\_colorful} \land \neg(\text{mask\_target})
-        \label{eq:bitwise_obstacle}
-    \end{equation}
-\end{enumerate}
-Kode implementasi segmentasi warna dapat dilihat pada Kode Program~\ref{lst:image_processor}.
-
-\begin{lstlisting}[language=Python, caption={Kode Program Modul Pemroses Citra (image\_processor.py)}, label={lst:image_processor}]
-import cv2
-import numpy as np
-
-class ImageProcessor:
-    def process_masks(self, frame, lower_color, upper_color):
-        blurred = cv2.GaussianBlur(frame, (11, 11), 0)
-        hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
-        
-        # 1. Masker untuk Target (Sesuai dengan warna klik pengguna)
-        mask_target = cv2.inRange(hsv, lower_color, upper_color)
-        mask_target = cv2.erode(mask_target, None, iterations=2)
-        mask_target = cv2.dilate(mask_target, None, iterations=2)
-        
-        # 2. Masker untuk Benda Berwarna Tajam (Kertas origami/binder)
-        # Kertas warna-warni biasanya memiliki nilai Saturation dan Value tinggi (> 100)
-        lower_colorful = np.array([0, 100, 80])
-        upper_colorful = np.array([180, 255, 255])
-        mask_colorful = cv2.inRange(hsv, lower_colorful, upper_colorful)
-        
-        mask_colorful = cv2.erode(mask_colorful, None, iterations=2)
-        mask_colorful = cv2.dilate(mask_colorful, None, iterations=2)
-        
-        # 3. Masker Obstacle
-        # Benda dianggap Pengecoh JIKA warnanya tajam, TAPI BUKAN merupakan warna target
-        mask_obstacle = cv2.bitwise_and(mask_colorful, cv2.bitwise_not(mask_target))
-        
-        return mask_target, mask_obstacle
-\end{lstlisting}
-
-\subsubsection{Deteksi Kontur Objek (\textit{object\_detector.py})}
-Setelah masker biner (\textit{mask\_target} dan \textit{mask\_obstacle}) terbentuk, koordinat fisik dan dimensi objek diidentifikasi menggunakan algoritma pencarian kontur eksternal (\texttt{cv2.findContours} dengan metode aproksimasi \texttt{CHAIN\_APPROX\_SIMPLE}). Kontur-kontur yang ditemukan disaring berdasarkan luas area pikselnya. Kontur dengan luas area yang kurang dari ambang batas minimum (\texttt{min\_area} = 500 piksel) akan diabaikan guna menyaring partikel debu atau noise minor di latar belakang.
-
-Setiap kontur valid yang lolos penyaringan dilingkupi dengan kotak pembatas tegak (\textit{Bounding Box}) berupa parameter koordinat piksel kiri atas ($x, y$) serta dimensi lebar ($w$) dan tinggi ($h$) menggunakan fungsi \texttt{cv2.boundingRect}. Daftar objek terdeteksi kemudian diurutkan berdasarkan ukuran luas area bounding box ($w \times h$) secara menurun (\textit{descending}) agar objek terbesar selalu menempati indeks pertama. Kode implementasi deteksi objek dapat dilihat pada Kode Program~\ref{lst:object_detector}.
-
-\begin{lstlisting}[language=Python, caption={Kode Program Modul Detektor Objek (object\_detector.py)}, label={lst:object_detector}]
-import cv2
-
-class ObjectDetector:
-    def __init__(self, min_area=500):
-        # min_area adalah ukuran minimal piksel agar benda tidak dianggap sebagai debu/noise
-        self.min_area = min_area
-
-    def find_objects(self, mask):
-        # Cari kontur (garis luar benda putih) pada masker
-        contours, _ = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        
-        valid_objects = []
-        for contour in contours:
-            area = cv2.contourArea(contour)
-            # Abaikan objek yang terlalu kecil
-            if area > self.min_area:
-                # Dapatkan koordinat x, y, lebar (w), dan tinggi (h)
-                x, y, w, h = cv2.boundingRect(contour)
-                valid_objects.append((x, y, w, h))
-                
-        # Urutkan objek berdasarkan luas bounding box (terbesar ke terkecil)
-        valid_objects = sorted(valid_objects, key=lambda obj: obj[2] * obj[3], reverse=True)
-        return valid_objects
-\end{lstlisting}
-
-\subsubsection{Estimasi Jarak Visual (\textit{distance\_estimator.py})}
-Sistem visi juga dilengkapi dengan kemampuan mengestimasi jarak fisik objek dari kamera memanfaatkan model proyeksi perspektif kamera lubang jarum (\textit{pinhole camera model}). Hubungan antara ukuran piksel objek pada sensor kamera dengan jarak fisiknya bersifat berbanding terbalik. Jarak fisik objek ($D$) diestimasi menggunakan persamaan matematika berikut:
-\begin{equation}
-    D = \frac{W_{\text{ref}} \times D_{\text{ref}}}{w}
-    \label{eq:distance_estimation}
-\end{equation}
-di mana:
-\begin{itemize}
-    \item $D$ adalah estimasi jarak fisik objek dari kamera saat ini (dalam cm).
-    \item $W_{\text{ref}}$ adalah lebar objek referensi dalam satuan piksel pada gambar saat proses kalibrasi dilakukan.
-    \item $D_{\text{ref}}$ adalah jarak fisik nyata referensi dari kamera ke objek saat proses kalibrasi dilakukan (dalam cm).
-    \item $w$ adalah dimensi lebar bounding box objek dalam satuan piksel pada frame saat ini.
-\end{itemize}
-Nilai kalibrasi awal berupa $W_{\text{ref}}$ dan $D_{\text{ref}}$ disimpan secara persisten ke dalam berkas konfigurasi \texttt{kalibrasi\_jarak.txt} sehingga sistem dapat langsung menggunakannya ketika dijalankan kembali. Kode implementasi estimasi jarak dapat dilihat pada Kode Program~\ref{lst:distance_estimator}.
-
-\begin{lstlisting}[language=Python, caption={Kode Program Modul Estimasi Jarak (distance\_estimator.py)}, label={lst:distance_estimator}]
-import os
-
-class DistanceEstimator:
-    def __init__(self, file_path="kalibrasi_jarak.txt"):
-        self.file_path = file_path
-        self.reference_pixel_width = 0.0
-        self.known_distance = 0.0
-        self.is_calibrated = False
-        self.load_calibration()
-
-    def load_calibration(self):
-        if os.path.exists(self.file_path):
-            try:
-                with open(self.file_path, "r") as f:
-                    lines = f.readlines()
-                    if len(lines) >= 2:
-                        self.reference_pixel_width = float(lines[0].strip())
-                        self.known_distance = float(lines[1].strip())
-                        self.is_calibrated = True
-                        print(f"[JARAK] Kalibrasi dimuat: {self.reference_pixel_width}px pada {self.known_distance}cm")
-            except Exception as e:
-                print(f"[JARAK] Gagal memuat file kalibrasi: {e}")
-
-    def calibrate(self, known_distance, pixel_width):
-        if known_distance > 0 and pixel_width > 0:
-            self.reference_pixel_width = pixel_width
-            self.known_distance = known_distance
-            self.is_calibrated = True
-            try:
-                with open(self.file_path, "w") as f:
-                    f.write(f"{pixel_width}\n{known_distance}\n")
-                print(f"[JARAK] Kalibrasi disimpan: {pixel_width}px pada {known_distance}cm")
-            except Exception as e:
-                print(f"[JARAK] Gagal menyimpan file kalibrasi: {e}")
-            return True
-        return False
-
-    def estimate_distance(self, pixel_width):
-        if not self.is_calibrated or pixel_width <= 0:
-            return 0.0
-            
-        # Rumus Jarak yang disederhanakan: D_baru = (Piksel_Awal * Jarak_Awal) / Piksel_Baru
-        distance = (self.reference_pixel_width * self.known_distance) / pixel_width
-        return round(distance, 1)
-\end{lstlisting}
-
-\subsubsection{Integrasi dan Kalibrasi Layanan (\textit{calibration\_service.py} \& \textit{stream\_service.py})}
-Sistem visual ini berjalan sebagai layanan web server lokal berbasis Flask API pada alamat URL \texttt{http://127.0.0.1:5000}. Layanan ini memfasilitasi interaksi pengguna untuk menentukan dan memilih objek target secara dinamis menggunakan antarmuka web.
-
-Mekanisme pemilihan target dilakukan dengan cara berikut:
-\begin{enumerate}
-    \item \textbf{Mode Discovery (Inisialisasi):} Pada mode awal ini, sistem belum mengunci warna target tertentu. Umpan kamera menampilkan tulisan panduan agar pengguna mengklik tepat pada objek target di layar.
-    \item \textbf{Pengambilan Sampel Warna (Klik Pengguna):} Ketika pengguna mengklik koordinat piksel $(x, y)$ objek target di web browser, koordinat tersebut dikirimkan ke web API server melalui request POST ke endpoint \texttt{/api/calibrate-color}. Layanan \texttt{CalibrationService} kemudian mengambil area ROI (\textit{Region of Interest}) berukuran $10 \times 10$ piksel di sekeliling titik koordinat tersebut pada frame HSV saat itu.
-    \item \textbf{Kalkulasi Toleransi HSV:} Nilai rata-rata Hue ($H_{\text{avg}}$), Saturation ($S_{\text{avg}}$), dan Value ($V_{\text{avg}}$) dari ROI dihitung dan diberi batas toleransi agar deteksi tetap stabil di bawah variasi pencahayaan:
-    \begin{equation}
-        H_{\text{lower/upper}} = H_{\text{avg}} \pm 15, \quad S_{\text{lower/upper}} = S_{\text{avg}} \pm 60, \quad V_{\text{lower/upper}} = V_{\text{avg}} \pm 60
-    \end{equation}
-    Batas toleransi ini secara otomatis disimpan sebagai parameter filter warna target aktif.
-    \item \textbf{Mode Tracking (Pelacakan):} Setelah warna target berhasil dikalibrasi, sistem beralih dari \textbf{Mode Discovery} ke \textbf{Mode Tracking} untuk melacak pergerakan target dan rintangan berdasarkan masker warna tersebut.
+    \item \textbf{TARGET}: The destination target that the robot must track and pursue (e.g., color-coded markers or landmarks).
+    \item \textbf{OBSTACLE}: Visual obstacles in front of the robot that must be avoided visually.
 \end{enumerate}
 
-Kode implementasi dari layanan kalibrasi warna dan deteksi ini dapat dilihat pada Kode Program~\ref{lst:calibration_service}.
+The vision data is returned in JSON format containing bounding box coordinates. The primary parameters used by the navigation loop are the horizontal center coordinate ($x_{\text{objek}}$) to determine deviation, and the width ($w$) and height ($h$) to calculate the bounding box area ($A = w \times h$) as a visual estimate of distance.
 
-\begin{lstlisting}[language=Python, caption={Kode Program Layanan Kalibrasi Warna Target (calibration\_service.py)}, label={lst:calibration_service}]
-import numpy as np
-import cv2
-from robot_vision_module.distance_estimator import DistanceEstimator
+\subsection{Control Logic and Navigation (Logic)}
+The control logic represents the decision-making core running on the Raspberry Pi. The navigation software is implemented in Python 3 with a modular design consisting of three primary scripts: \texttt{motor\_manager.py}, \texttt{ultrasonic\_manager.py}, and \texttt{navigator.py}.
 
-class CalibrationService:
-    def __init__(self):
-        self.mode = "DISCOVERY" # Mode awal adalah mencari benda apapun
-        self.target_lower = np.array([0, 0, 0])
-        self.target_upper = np.array([180, 255, 255])
-        self.is_calibrated = False
-        self.last_discovery_objects = []
-        
-        self.distance_estimator = DistanceEstimator()
-        self.last_target_bbox = None
-        self.latest_objects_data = []
+\subsubsection{Motor Driver Controller (motor\_manager.py)}
+The \texttt{motor\_manager.py} module controls the direction and speed of the DC motors using Pulse Width Modulation (PWM) signals from the Raspberry Pi GPIO pins to the L298N driver. The code is shown in Listing~\ref{lst:motor_manager}.
 
-    def calibrate_color(self, frame, x, y):
-        h, w = frame.shape[:2]
-        if x < 0 or x >= w or y < 0 or y >= h:
-            return False
-
-        # Ambil sampel dari area kecil di sekitar titik klik (agar lebih representatif)
-        y_min, y_max = max(0, y-5), min(h, y+5)
-        x_min, x_max = max(0, x-5), min(w, x+5)
-        roi = frame[y_min:y_max, x_min:x_max]
-        
-        hsv_roi = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
-        
-        # Rata-rata warna
-        if hsv_roi.size > 0:
-            avg_hsv = np.average(np.average(hsv_roi, axis=0), axis=0)
-        else:
-            return False
-            
-        hue, sat, val = avg_hsv[0], avg_hsv[1], avg_hsv[2]
-        
-        # Toleransi
-        lower_hue = max(0, hue - 15)
-        upper_hue = min(180, hue + 15)
-        
-        lower_sat = max(50, sat - 60) 
-        upper_sat = min(255, sat + 60)
-        
-        lower_val = max(50, val - 60) 
-        upper_val = min(255, val + 60)
-
-        self.target_lower = np.array([lower_hue, lower_sat, lower_val])
-        self.target_upper = np.array([upper_hue, upper_sat, upper_val])
-        self.mode = "TRACKING"
-        self.is_calibrated = True
-
-        print(f"[KALIBRASI] Klik ({x}, {y}) | AVG HSV: {avg_hsv}")
-        return True
-
-    def calibrate_distance(self, known_distance):
-        if self.last_target_bbox is not None:
-            _, _, w, _ = self.last_target_bbox
-            success = self.distance_estimator.calibrate(known_distance, w)
-            if success:
-                print(f"[KALIBRASI JARAK] Berhasil! Piksel {w}px = {known_distance}cm")
-            return success
-        return False
-        
-    def reset_mode(self):
-        self.mode = "DISCOVERY"
-\end{lstlisting}
-
-Layanan API web Flask ini mengekspos endpoint-endpoint fungsional utama berikut:
+Key control aspects include:
 \begin{itemize}
-    \item \texttt{/video\_feed}: Mengalirkan umpan video (\textit{video stream}) beranotasi bounding box secara real-time ke antarmuka pengguna berbasis web menggunakan format \textit{Multipart JPEG} (MJPEG) yang disuplai oleh \texttt{stream\_service.py}.
-    \item \texttt{/api/objects}: Mengembalikan data koordinat tengah sumbu-x target ($x_{\text{target}}$) dan rintangan visual, bounding box, serta hasil estimasi jarak visual dalam format JSON untuk diakses oleh script kemudi utama robot.
+    \item \textbf{Wheel Speed Calibration (\textit{Left Bias}):} To compensate for physical DC motor imbalances, a left-wheel speed multiplier (\texttt{left\_bias}) of $1.14$ is applied during initialization in the navigator script to keep the robot moving straight.
+    \item \textbf{Proportional Speed Limiting:} Motor speed commands range from $-255$ to $255$. If speed exceeds \texttt{max\_speed\_limit} (set to 180), speed values are scaled proportionally to maintain the steering ratio.
+    \item \textbf{Minimum Torque Threshold:} To overcome static friction, active motor speeds are clamped to a minimum magnitude of $\pm 90$.
 \end{itemize}
 
-\subsection{Perancangan Logika Kontrol dan Navigasi (Logic)}
-Bagian perancangan logika kontrol merupakan pusat pengambilan keputusan robot berbasis Raspberry Pi. Logika navigasi dirancang menggunakan bahasa pemrograman Python 3 dengan struktur modular yang terdiri dari tiga berkas program utama: \texttt{motor\_manager.py}, \texttt{ultrasonic\_manager.py}, dan \texttt{navigator.py}. Diagram alir atau arsitektur modular perangkat lunak navigasi ini diintegrasikan dalam satu kesatuan sistem otonom.
-
-\subsubsection{Pengendali Driver Motor (motor\_manager.py)}
-Modul \texttt{motor\_manager.py} bertanggung jawab langsung untuk mengontrol arah putaran dan kecepatan motor DC menggunakan sinyal PWM (\textit{Pulse Width Modulation}) yang disuplai oleh Raspberry Pi melalui GPIO ke driver motor L298N. Kode implementasi modul ini dapat dilihat pada Kode Program~\ref{lst:motor_manager}.
-
-Beberapa aspek logika penting pada modul ini meliputi:
-\begin{itemize}
-    \item \textbf{Kalibrasi Bias Roda (\textit{Left Bias}):} Karena ketidakseimbangan mekanis bawaan motor DC kiri dan kanan, diterapkan pengali bias roda kiri (\texttt{left\_bias}) sebesar $1.14$ pada saat inisialisasi di navigator agar robot dapat melaju lurus secara simetris.
-    \item \textbf{Pembatasan Kecepatan Proporsional (\textit{Speed Limiting}):} Kecepatan dikontrol dalam rentang $-255$ hingga $255$. Jika input kecepatan melebihi batas \texttt{max\_speed\_limit} (disetel pada 180), kecepatan kedua motor diturunkan secara proporsional menggunakan persamaan rasio agar arah belokan (\textit{steering ratio}) tetap terjaga sesuai instruksi navigasi.
-    \item \textbf{Torsi Minimum Motor:} Untuk mengatasi gesekan statis sasis robot, diterapkan logika ambang batas bawah di mana motor yang diinstruksikan bergerak akan diberikan daya minimal sebesar $\pm 90$.
-\end{itemize}
-
-\begin{lstlisting}[language=Python, caption={Kode Program Modul Pengendali Motor (motor\_manager.py)}, label={lst:motor_manager}]
+\begin{lstlisting}[language=Python, caption={Motor Driver Control Module (motor\_manager.py)}, label={lst:motor_manager}]
 import RPi.GPIO as GPIO
 
 class MotorManager:
@@ -466,17 +134,17 @@ class MotorManager:
         self.pwm_right = None
 \end{lstlisting}
 
-\subsubsection{Pengelola Sensor Jarak Ultrasonik (ultrasonic\_manager.py)}
-Modul \texttt{ultrasonic\_manager.py} digunakan untuk berinteraksi dengan sensor ultrasonik HC-SR04 guna membaca jarak fisik hambatan di depan robot secara langsung. Kode implementasi modul ini ditunjukkan pada Kode Program~\ref{lst:ultrasonic_manager}.
+\subsubsection{Ultrasonic Sensor Manager (ultrasonic\_manager.py)}
+The \texttt{ultrasonic\_manager.py} module interfaces with the HC-SR04 sensor to read physical distance. The code is shown in Listing~\ref{lst:ultrasonic_manager}.
 
-Untuk memastikan akurasi dan kecepatan respon navigasi, modul ini menerapkan beberapa metode logis berikut:
+To ensure responsive measurements without noise:
 \begin{itemize}
-    \item \textbf{Moving Average dan Penyaringan Data (Filtering):} Sensor melakukan 3 kali pembacaan jarak mentah dengan jeda singkat 10 ms antar pembacaan. Nilai yang dianggap valid adalah jarak dalam rentang $2$ hingga $400$ cm. Pembacaan yang valid kemudian dirata-ratakan untuk menyaring pencilan (\textit{noise}).
-    \item \textbf{Faktor Koreksi Dinamis (Kalibrasi):} Modul memuat nilai faktor koreksi dari berkas teks eksternal \texttt{faktor\_koreksi.txt} saat inisialisasi. Jarak akhir yang digunakan oleh robot merupakan hasil perkalian jarak mentah rata-rata dengan faktor koreksi ini ($s_{\text{kalibrasi}} = s_{\text{mentah}} \times f_{\text{koreksi}}$).
-    \item \textbf{Pencegahan Kegagalan (Fallback):} Jika sensor gagal mendapatkan data pembacaan yang valid, fungsi secara otomatis mengembalikan nilai $999$ cm agar robot tidak berhenti mendadak akibat kesalahan sensor sementara.
+    \item \textbf{Moving Average Filter:} The sensor takes 3 raw readings with a 10 ms interval. Valid readings (between 2 and 400 cm) are averaged to filter out spikes.
+    \item \textbf{Correction Factor:} A calibration factor is loaded from the external file `faktor_koreksi.txt` to scale the distance ($s_{\text{calibrated}} = s_{\text{raw}} \times f_{\text{correction}}$).
+    \item \textbf{Fallback Protection:} If reading fails, it returns 999 cm to prevent sudden braking.
 \end{itemize}
 
-\begin{lstlisting}[language=Python, caption={Kode Program Modul Sensor Ultrasonik (ultrasonic\_manager.py)}, label={lst:ultrasonic_manager}]
+\begin{lstlisting}[language=Python, caption={Ultrasonic Sensor Interface Module (ultrasonic\_manager.py)}, label={lst:ultrasonic_manager}]
 import RPi.GPIO as GPIO
 import time
 import os
@@ -548,11 +216,11 @@ class UltrasonicManager:
         pass
 \end{lstlisting}
 
-\subsubsection{Algoritma Kontrol PID dan Logika Navigasi Utama (navigator.py)}
-Modul \texttt{navigator.py} merupakan otak navigasi otonom yang mengintegrasikan data sensor jarak ultrasonik dan data visi komputer untuk mengambil keputusan gerak secara sekuensial. Kode lengkap dari modul ini ditunjukkan pada Kode Program~\ref{lst:navigator}.
+\subsubsection{PID Control Algorithm and Main Navigation (navigator.py)}
+The \texttt{navigator.py} module integrates the sensory inputs to make sequential movement decisions. The complete code is shown in Listing~\ref{lst:navigator}.
 
-\paragraph{Algoritma Kendali PID (Proportional-Integral-Derivative)}
-Sistem kemudi otomatis saat mendeteksi target visual menggunakan pengendali PID untuk meminimalkan deviasi arah (error) terhadap titik tengah kamera. Persamaan matematika PID yang diimplementasikan adalah:
+\paragraph{PID Control Algorithm}
+The steering command is calculated using a proportional-integral-derivative (PID) controller to align the robot's heading with the target's visual center. The equations are:
 \begin{equation}
     e(t) = x_{\text{target}} - x_{\text{setpoint}}
     \label{eq:pid_error}
@@ -561,38 +229,38 @@ Sistem kemudi otomatis saat mendeteksi target visual menggunakan pengendali PID 
     u(t) = K_p \cdot e(t) + K_i \int_{0}^{t} e(\tau) d\tau + K_d \frac{de(t)}{dt}
     \label{eq:pid_output}
 \end{equation}
-di mana $x_{\text{setpoint}} = 160$ piksel (nilai tengah horizontal dari resolusi lebar citra 320 piksel), dan $e(t)$ adalah error posisi horizontal target. Nilai konstanta kendali yang disetel adalah $K_p = 0.8$ untuk respon proporsional yang tanggap, $K_d = 0.05$ untuk meredam osilasi arah, dan $K_i = 0.0$ untuk menghindari akumulasi error jangka panjang. Luaran kendali $u(t)$ bertindak sebagai nilai kemudi (\textit{steer value}) yang memodifikasi kecepatan motor kiri ($v_{\text{kiri}}$) dan motor kanan ($v_{\text{kanan}}$):
+where $x_{\text{setpoint}} = 160$ pixels (the horizontal center of the 320-pixel wide camera frame), and $e(t)$ is the horizontal pixel error. The controller parameters are tuned to $K_p = 0.8$, $K_d = 0.05$, and $K_i = 0.0$. The control signal $u(t)$ alters the left and right motor speeds:
 \begin{equation}
-    v_{\text{kiri}} = V_{\text{base}} + u(t)
+    v_{\text{left}} = V_{\text{base}} + u(t)
     \label{eq:motor_left}
 \end{equation}
 \begin{equation}
-    v_{\text{kanan}} = V_{\text{base}} - u(t)
+    v_{\text{right}} = V_{\text{base}} - u(t)
     \label{eq:motor_right}
 \end{equation}
-di mana $V_{\text{base}} = 125$ merupakan kecepatan dasar gerakan maju robot.
+where $V_{\text{base}} = 125$ is the forward base speed.
 
-\paragraph{Arsitektur Finite State Machine (FSM) Sekuensial}
-Logika navigasi beroperasi dalam suatu loop utama tak terbatas yang berjalan secara sekuensial dan terbagi menjadi beberapa keadaan (\textit{states}):
+\paragraph{Sequential Finite State Machine (FSM) Architecture}
+The navigation loop operates as a sequential Finite State Machine:
 \begin{enumerate}
-    \item \textbf{State 1: Deteksi Rintangan Ultrasonik Jarak Dekat:} Jarak depan diperiksa terlebih dahulu menggunakan sensor ultrasonik.
+    \item \textbf{State 1: Ultrasonic Close-Range Avoidance:} Front distance is checked using the ultrasonic sensor.
     \begin{itemize}
-        \item Jika $s \le 15$ cm, robot akan berhenti seketika.
-        \item Sistem memeriksa data visi komputer. Jika objek di depannya terdeteksi sebagai \texttt{TARGET} dengan area visual $> 10.000$ piksel dan jarak fisik $\le 12$ cm, robot mendeteksi kondisi \textbf{Finish} dan menghentikan navigasi sepenuhnya.
-        \item Jika bukan target akhir, robot mendeteksi rintangan (\texttt{OBSTACLE}) fisik. Robot mundur perlahan (\texttt{-V\_SLOW}) selama $0.5$ detik, berhenti $0.2$ detik, kemudian melakukan manuver berputar menghindar ke kiri atau kanan selama $0.3$ detik berdasarkan arah memori target terakhir (\texttt{last\_known\_target\_direction}).
+        \item If $s \le 15$ cm, the robot stops.
+        \item It checks if the target area is $> 10,000$ pixels and distance $\le 12$ cm. If so, it enters the \textbf{Finish} state and stops the program.
+        \item Otherwise, it backs up at \texttt{-V\_SLOW} for 0.5s, pauses for 0.2s, and turns for 0.3s away from the obstacle based on the memory variable \texttt{last\_known\_target\_direction}.
     \end{itemize}
     
-    \item \textbf{State 2: Pembacaan Target dan Rintangan Visual:} Jika tidak ada rintangan jarak dekat, robot berhenti diam selama 0.1 detik untuk menstabilkan gambar kamera dari efek kabur akibat guncangan (\textit{motion blur}), memanggil REST API untuk mengambil data visi terbaru, dan mengidentifikasi target terbesar dengan area $> 600$ piksel serta rintangan visual terbesar dengan area $> 2000$ piksel.
+    \item \textbf{State 2: Frame Stabilization and Image Acquisition:} If the path is clear, the robot pauses for 0.1s to avoid motion blur, fetches object coordinates from the Flask API, and identifies targets (area $> 600$) and obstacles (area $> 2000$).
     
-    \item \textbf{State 3: Eksekusi Gerakan Berprioritas:}
+    \item \textbf{State 3: Motion Execution:}
     \begin{itemize}
-        \item \textbf{Prioritas 1 (Pengejaran Target):} Jika target terdeteksi, robot melaju ke arah target menggunakan kendali kemudi PID yang dihitung dari koordinat target. Arah gerak disimpan ke variabel memori \texttt{last\_known\_target\_direction} (LEFT atau RIGHT). Robot melaju selama $0.25$ detik.
-        \item \textbf{Prioritas 2 (Penghindaran Rintangan Visual):} Jika tidak ada target tetapi rintangan terdeteksi di area tengah ($160 \pm 75$ piksel), robot menghindar dengan berbelok menjauh dari rintangan visual tersebut. Jika rintangan berada di luar area tengah, robot melaju lurus dengan aman. Robot melaju selama $0.25$ detik.
-        \item \textbf{Prioritas 3 (Pencarian Target berbasis Memori):} Jika tidak ada objek terdeteksi, robot memutar badannya ke arah memori target terakhir untuk menemukannya kembali selama $0.2$ detik. Jika tidak ada memori arah target, robot diam demi keamanan.
+        \item \textbf{Priority 1 (Target Pursuit):} If the target is detected, it drives toward it using PID steering and stores the direction in \texttt{last\_known\_target\_direction} for 0.25s.
+        \item \textbf{Priority 2 (Visual Obstacle Avoidance):} If target is absent but an obstacle is in the center ($160 \pm 75$ px), it steers away for 0.25s.
+        \item \textbf{Priority 3 (Memory-based Target Search):} If no objects are visible, it turns in the direction of the last known target for 0.2s. If no direction is stored, it stops.
     \end{itemize}
 \end{enumerate}
 
-\begin{lstlisting}[language=Python, caption={Kode Program Modul Navigasi Utama (navigator.py)}, label={lst:navigator}]
+\begin{lstlisting}[language=Python, caption={Main Navigation Module (navigator.py)}, label={lst:navigator}]
 import requests
 import time
 from .motor_manager import MotorManager
