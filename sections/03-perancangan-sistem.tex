@@ -4,24 +4,51 @@
 Pada bab ini dijelaskan arsitektur perancangan sistem robotika secara menyeluruh, yang terbagi menjadi perancangan perangkat keras (hardware), perancangan sistem visual (visi komputer), dan perancangan logika kontrol navigasi (logic).
 
 \subsection{Perancangan Perangkat Keras (Hardware)}
-Robot ini dirancang menggunakan platform \textit{Single Board Computer} (SBC) berupa Raspberry Pi sebagai unit pemroses utama. Perangkat keras robot terbagi menjadi komponen mekanik sasis, sistem penggerak aktuator berupa motor DC dengan driver motor L298N, sensor jarak ultrasonik HC-SR04 untuk deteksi rintangan fisik jarak dekat, serta USB Webcam sebagai sensor penglihatan utama. Diagram blok sistem perangkat keras dapat dilihat pada Gambar~\ref{fig:block_diagram}.
 
+Arsitektur perangkat keras pada robot pelacak warna otonom ini dirancang menggunakan pendekatan sistem kendali terintegrasi digital. Secara konseptual, sistem ini terbagi ke dalam empat blok fungsional utama: unit komputasi pusat, instrumentasi persepsi, sistem aktuasi mekanis, dan topologi manajemen daya. Aliran data, sinyal kendali, serta distribusi arus antarblok fungsional tersebut direpresentasikan melalui diagram arsitektur tingkat tinggi (\textit{high-level architecture}) pada Gambar \ref{fig:diagram_hardware}.
+
+% Menggunakan [H] memaksa gambar berada tepat di bawah teks paragraf ini
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=0.7\textwidth]{diagram_blok.png} % Hapus tanda persen (%) jika file sudah ada
-    \framebox[10cm]{\parbox[t][4cm]{9.5cm}{\vfill\centering [Masukkan Diagram Blok Hardware / Foto Robot di sini]\vfill}} % Placeholder sementara
-    \caption{Diagram Blok Arsitektur Perangkat Keras Robot.}
-    \label{fig:block_diagram}
+    % Ganti nama file sesuai dengan yang ada di repositori Anda
+    \includegraphics[width=0.8\textwidth]{nama_file_diagram.png} 
+    \caption{Diagram blok arsitektur perangkat keras dan aliran sinyal kendali robot.}
+    \label{fig:diagram_hardware}
 \end{figure}
 
-Dokumentasi foto robot yang telah dirakit diletakkan pada Gambar~\ref{fig:foto_robot}. File gambar disimpan di dalam folder \texttt{figures/}.
+\subsubsection{Unit Pemrosesan Pusat (\textit{Central Processing Unit})}
+Otak kendali dari keseluruhan sistem bertumpu pada \textit{Single-Board Computer} (SBC) Raspberry Pi 3 Model B. Penggunaan SBC dinilai lebih esensial dibandingkan mikrokontroler standar karena kapasitas komputasinya yang memadai untuk menangani operasi matriks secara intensif pada algoritma \textit{computer vision} (OpenCV). Raspberry Pi bertindak sebagai unit kontrol utama yang membaca aliran data visual, memproses logika pengambilan keputusan navigasi, dan mentranslasikan kalkulasi tersebut menjadi sinyal kontrol \textit{Pulse Width Modulation} (PWM). Sinyal ini kemudian didistribusikan melalui deretan pin \textit{General Purpose Input/Output} (GPIO) untuk mengatur respons aktuator.
+
+\subsubsection{Instrumentasi Persepsi Lingkungan (\textit{Sensory System})}
+Kemampuan robot dalam memetakan lintasan direalisasikan melalui integrasi dua jenis transduser yang bekerja pada domain spektrum fisik yang berbeda:
+\begin{itemize}
+    \item \textbf{Sensor Optik (Kamera USB 1080p):} Berfungsi sebagai instrumen akuisisi citra utama yang menangkap pantulan cahaya visual dari objek dan mengonversinya menjadi matriks piksel RGB (\textit{Red, Green, Blue}). Data mentah matriks ini kemudian dialirkan ke unit pemrosesan untuk ditransformasikan ke dalam ruang warna silindris HSV (\textit{Hue, Saturation, Value}). Pemetaan ke pemodelan HSV sangat fundamental dalam instrumentasi visual karena sistem dapat memisahkan informasi kromatik warna murni (\textit{Hue}) dari intensitas iluminasi lingkungan (\textit{Value}). Hal ini membuat algoritma pelacakan target (titik \textit{Finish}) jauh lebih tangguh terhadap fluktuasi pencahayaan ruangan yang sering memicu \textit{false detection}.
+    \item \textbf{Sensor Akustik Ultrasonik (HC-SR04):} Bekerja berdasarkan prinsip \textit{Time-of-Flight} (ToF) gelombang mekanik. Transduser ini memancarkan pulsa ultrasonik pada frekuensi 40 kHz dan menghitung selisih waktu hingga gelombang pantulan (\textit{echo}) diterima kembali oleh \textit{receiver}. Sensor ini diimplementasikan sebagai sistem redundansi pencegah tabrakan (\textit{obstacle avoidance}). Apabila jarak rintangan proksimal terbaca di bawah ambang batas kritis, masukan dari sensor ini akan memicu \textit{interrupt} pada sistem kendali utama untuk seketika menghentikan laju traksi, guna mencegah benturan fisik ketika sensor visual tertutup atau terlambat merespons.
+\end{itemize}
+
+\subsubsection{Sistem Aktuasi dan Pengendali Kinematika}
+Konversi sinyal kendali elektrik menjadi torsi mekanis dikelola oleh penggerak model diferensial (\textit{differential drive}).
+\begin{itemize}
+    \item \textbf{Sirkuit Pengendali Motor L298N:} Modul ini difungsikan sebagai jembatan antarmuka daya antara pin GPIO Raspberry Pi yang bekerja pada tegangan logika rendah (3,3V) dengan beban induktif yang menuntut suplai arus masif. L298N beroperasi menggunakan topologi sirkuit \textit{Dual H-Bridge}, yang memungkinkan pembalikan polaritas tegangan secara dinamis untuk mengatur arah putaran motor, sembari mengalihkan sinyal PWM dari mikrokontroler untuk meregulasi \textit{duty cycle} (kecepatan rotasi).
+    \item \textbf{Motor Arus Searah (DC):} Sistem pergerakan akhir bertumpu pada dua buah motor DC yang dikopling pada roda sisi kiri dan kanan sasis. Dengan memvariasikan distribusi kecepatan putar secara asinkron antara kedua roda, robot mampu merealisasikan fungsi kemudi \textit{skid-steering} untuk bermanuver menghindari halangan maupun melakukan koreksi lintasan secara halus.
+\end{itemize}
+
+\subsubsection{Topologi Manajemen Daya (\textit{Power Distribution})}
+Stabilitas komputasional pada \textit{embedded system} sangat bergantung pada skema catu daya yang diterapkan. Mengingat motor DC berkarakteristik induktif—yang rentan memicu lonjakan arus (\textit{inrush current}) saat mulai berputar serta menghasilkan gaya gerak listrik balik (\textit{back-EMF})—sistem ini menerapkan topologi catu daya terpisah (\textit{split power supply}) dengan mengintegrasikan \textit{common ground}.
+\begin{itemize}
+    \item \textbf{Catu Daya Komputasi Logika:} Raspberry Pi ditenagai oleh sumber daya tertutup (\textit{Powerbank} 5V/3A). Pemisahan sumber arus ini krusial untuk menjaga stabilitas tegangan komputasi dan mencegah \textit{voltage drop} sesaat yang berisiko mereset modul \textit{kernel} sistem operasi ketika aktuator bekerja maksimal.
+    \item \textbf{Catu Daya Beban Mekanis:} Rangkaian \textit{driver} L298N dan motor DC memperoleh asupan daya dari susunan seri dua buah baterai \textit{Lithium-ion} 18650. Tegangan nominal 7,4V dari susunan ini diinjeksikan langsung ke terminal \textit{input} penggerak. Meskipun sumber daya dipisah secara fisik, penyatuan terminal \textit{ground} (GND) antara sirkuit baterai 18650 dan GPIO Raspberry Pi diimplementasikan secara ketat. Hal ini bertujuan agar seluruh pulsa kontrol PWM memiliki referensi ekuipotensial nol yang seragam, memastikan logika operasional diterjemahkan dengan presisi tanpa terinterferensi derau (\textit{noise}).
+\end{itemize}
+
+\vspace{1em}
+Implementasi nyata dari fusi seluruh instrumen perangkat keras pada sasis mekanik dapat dilihat pada Gambar \ref{fig:fisik_robot}. Integrasi konkrit antarblok fungsional inilah yang pada akhirnya memampukan sistem untuk mengakuisisi parameter lingkungan secara aktual, mengeksekusi algoritma pemrosesan citra digital, dan merealisasikan manuver kinematik secara presisi.
 
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=0.6\textwidth]{foto_robot.jpg} % Hapus tanda persen (%) jika file sudah ada
-    \framebox[10cm]{\parbox[t][6cm]{9.5cm}{\vfill\centering [Tempatkan Foto Robot Anda di sini / Simpan file di folder figures]\vfill}} % Placeholder sementara
-    \caption{Dokumentasi Fisik Robot Hasil Perakitan Kelompok.}
-    \label{fig:foto_robot}
+    % Ganti nama file sesuai dengan yang ada di repositori Anda
+    \includegraphics[width=0.7\textwidth]{nama_file_robot.jpg} 
+    \caption{Implementasi fisik perangkat keras pada sasis robot pelacak warna.}
+    \label{fig:fisik_robot}
 \end{figure}
 
 \subsection{Perancangan Sistem Visual (Visual)}
