@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.3.9)  24 JUN 2026 15:05
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.3.9)  24 JUN 2026 20:32
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -777,11 +777,10 @@ Package biblatex Info: ... file 'main.bbl' found.
 Package biblatex Info: Reference section=0 on input line 11.
 Package biblatex Info: Reference segment=0 on input line 11.
 Package hyperref Info: Link coloring ON on input line 11.
- (./main.out) (./main.out)
 \@outlinefile=\write4
 \openout4 = `main.out'.
 
-<figures/Lambang UGM-hitam.png, id=84, 416.0343pt x 431.4519pt>
+<figures/Lambang UGM-hitam.png, id=4, 416.0343pt x 431.4519pt>
 File: figures/Lambang UGM-hitam.png Graphic file (type png)
 <use figures/Lambang UGM-hitam.png>
 Package pdftex.def Info: figures/Lambang UGM-hitam.png  used on input line 26.
@@ -802,114 +801,209 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
 ) [1
 
-{c:/texlive/2026/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{c:/texlive/2026/texmf-dist/fonts/enc/dvips/base/8r.enc} <./figures/Lambang UGM-hitam.png>] (./main.toc)
+{c:/texlive/2026/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{c:/texlive/2026/texmf-dist/fonts/enc/dvips/base/8r.enc} <./figures/Lambang UGM-hitam.png>]
+No file main.toc.
 \tf@toc=\write5
 \openout5 = `main.toc'.
 
- [1] (./main.lof)
+[1]
+No file main.lof.
 \tf@lof=\write6
 \openout6 = `main.lof'.
 
- (./main.lot)
+No file main.lot.
 \tf@lot=\write7
 \openout7 = `main.lot'.
 
- [2] (./sections/01-pendahuluan.tex [1] [2]) [3] (./sections/02-tinjauan-pustaka.tex) [4] (./sections/03-perancangan-sistem.tex
-LaTeX Font Info:    Trying to load font information for OT1+pcr on input line 17.
- (c:/texlive/2026/texmf-dist/tex/latex/psnfss/ot1pcr.fd
+[2] (./sections/01-pendahuluan.tex [1] [2]) [3] (./sections/02-tinjauan-pustaka.tex) [4] (./sections/03-perancangan-sistem.tex
+
+LaTeX Warning: Reference `fig:block_diagram' on page 5 undefined on input line 7.
+
+<figures/block_diagram.jpg, id=67, 744.98325pt x 298.11375pt>
+File: figures/block_diagram.jpg Graphic file (type jpg)
+<use figures/block_diagram.jpg>
+Package pdftex.def Info: figures/block_diagram.jpg  used on input line 11.
+(pdftex.def)             Requested size: 341.43437pt x 136.62906pt.
+
+LaTeX Warning: Reference `fig:foto_robot' on page 5 undefined on input line 16.
+
+LaTeX Font Info:    Trying to load font information for OT1+pcr on input line 16.
+(c:/texlive/2026/texmf-dist/tex/latex/psnfss/ot1pcr.fd
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
-) [5] (c:/texlive/2026/texmf-dist/tex/latex/listings/lstlang1.sty
+)
+<figures/gambar_robot.jpg, id=68, 1606.0pt x 906.38625pt>
+File: figures/gambar_robot.jpg Graphic file (type jpg)
+<use figures/gambar_robot.jpg>
+Package pdftex.def Info: figures/gambar_robot.jpg  used on input line 20.
+(pdftex.def)             Requested size: 256.07741pt x 144.51303pt.
+
+Overfull \hbox (87.70193pt too wide) in paragraph at lines 26--27
+\OT1/ptm/m/n/12 (-20) mo-du-le run-ning as a lo-cal Flask web se-rver API at the URL \OT1/pcr/m/n/12 http://127.0.0.1:5000/api/objects\OT1/ptm/m/n/12 (-20) . 
+ []
+
+[5 <./figures/block_diagram.jpg> <./figures/gambar_robot.jpg>]
+
+LaTeX Warning: Reference `lst:motor_manager' on page 6 undefined on input line 40.
+
+LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 44.
+(c:/texlive/2026/texmf-dist/tex/latex/psnfss/ts1ptm.fd
+File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
+) [6] (c:/texlive/2026/texmf-dist/tex/latex/listings/lstlang1.sty
 File: lstlang1.sty 2025/11/14 1.11b listings language file
 )
-Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on input line 35.
- [6] [7] [8] [9]
-Overfull \hbox (35.75842pt too wide) in paragraph at lines 158--159
-\OT1/ptm/m/n/12 (-20) si ob-jek di-i-den-ti-fi-ka-si meng-gu-nak-an al-go-ri-tma pen-ca-ri-an kon-tur eks-ter-nal (\OT1/pcr/m/n/12 cv2.findContours
+Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on input line 49.
+ [7] [8]
+
+LaTeX Warning: Reference `lst:ultrasonic_manager' on page 9 undefined on input line 138.
+
+
+Overfull \hbox (62.27348pt too wide) in paragraph at lines 143--144
+[]\OT1/ptm/b/n/12 (-20) Correction Fa-ctor: \OT1/ptm/m/n/12 (-20) A ca-li-bra-tion fa-ctor is lo-a-ded from the exter-nal fi-le \OT1/pcr/m/n/12 faktor[]koreksi.txt
  []
 
-[10]
-LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 196.
- (c:/texlive/2026/texmf-dist/tex/latex/psnfss/ts1ptm.fd
-File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
-) [11] [12] [13] [14] [15]
-Overfull \hbox (16.55019pt too wide) in paragraph at lines 350--351
-\OT1/ptm/m/n/12 (-20) lam ren-tang $\OMS/cmsy/m/n/12 ^^@\OT1/cmr/m/n/12 255$ \OT1/ptm/m/n/12 (-20) hing-ga $\OT1/cmr/m/n/12 255$\OT1/ptm/m/n/12 (-20) . Ji-ka in-put ke-ce-pat-an me-le-bi-hi ba-tas \OT1/pcr/m/n/12 max[]speed[]limit
+[9] [10]
+
+LaTeX Warning: Reference `lst:navigator' on page 11 undefined on input line 220.
+
+
+Overfull \hbox (65.51761pt too wide) in paragraph at lines 250--251
+\OT1/ptm/m/n/12 (-20) away from the obs-ta-cle ba-sed on the me-mory va-ri-a-ble \OT1/pcr/m/n/12 last[]known[]target[]direction\OT1/ptm/m/n/12 (-20) . 
  []
 
-[16] [17] [18] [19] [20]
-Overfull \hbox (11.0353pt too wide) in paragraph at lines 555--556
-\OT1/ptm/m/n/12 (-20) ber-da-sark-an arah me-mo-ri tar-get ter-a-khir (\OT1/pcr/m/n/12 last[]known[]target[]direction\OT1/ptm/m/n/12 (-20) ). 
- []
-
-[21]
-Overfull \hbox (5.3362pt too wide) in paragraph at lines 562--563
-\OT1/ptm/m/n/12 (-20) Arah ge-rak di-simp-an ke va-ri-a-bel me-mo-ri \OT1/pcr/m/n/12 last[]known[]target[]direction
- []
-
-
-Overfull \hbox (31.2131pt too wide) in paragraph at lines 574--575
+[11]
+Overfull \hbox (31.2131pt too wide) in paragraph at lines 269--270
 [][][][] 
  []
 
 
-Overfull \hbox (31.2131pt too wide) in paragraph at lines 576--578
-[][][][] 
- []
-
-[22]
-Overfull \hbox (31.2131pt too wide) in paragraph at lines 594--595
+Overfull \hbox (31.2131pt too wide) in paragraph at lines 271--273
 [][][][] 
  []
 
 
-Overfull \hbox (31.2131pt too wide) in paragraph at lines 596--597
+Overfull \hbox (31.2131pt too wide) in paragraph at lines 289--290
 [][][][] 
  []
 
-[23]
-Overfull \hbox (31.2131pt too wide) in paragraph at lines 637--638
+[12]
+Overfull \hbox (31.2131pt too wide) in paragraph at lines 291--292
+[][][][] 
+ []
+
+[13]
+Overfull \hbox (31.2131pt too wide) in paragraph at lines 332--333
 [][][][] 
  []
 
 
-Overfull \hbox (31.2131pt too wide) in paragraph at lines 639--641
+Overfull \hbox (31.2131pt too wide) in paragraph at lines 334--336
 [][][][] 
  []
 
-[24] [25] [26] [27]) [28] (./sections/04-pengujian-hasil.tex
-Overfull \hbox (48.09315pt too wide) in paragraph at lines 14--27
+[14] [15] [16] [17]) [18] (./sections/04-pengujian-hasil.tex
+
+LaTeX Warning: Reference `sec:perancangan_sistem' on page 19 undefined on input line 9.
+
+
+LaTeX Warning: Reference `lst:motor_manager' on page 19 undefined on input line 9.
+
+
+LaTeX Warning: Reference `tab:pengujian_sensor' on page 19 undefined on input line 12.
+
+
+Overfull \hbox (48.09315pt too wide) in paragraph at lines 18--31
  [][] 
  []
 
-) [29] (./sections/05-kesimpulan-saran.tex) [30]
+
+LaTeX Warning: Reference `tab:pengujian_sensor' on page 19 undefined on input line 33.
+
+
+LaTeX Warning: Reference `eq:ultrasonic' on page 19 undefined on input line 33.
+
+
+LaTeX Warning: Reference `sec:tinjauan_pustaka' on page 19 undefined on input line 33.
+
+[19]
+
+LaTeX Warning: Reference `lst:ultrasonic_manager' on page 20 undefined on input line 37.
+
+
+LaTeX Warning: Reference `fig:lintasan' on page 20 undefined on input line 40.
+
+
+LaTeX Warning: File `lintasan.png' not found on input line 44.
+
+
+./sections/04-pengujian-hasil.tex:44: Package pdftex.def Error: File `lintasan.png' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.44 ...raphics[width=0.8\textwidth]{lintasan.png}
+                                                  
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+[20]
+
+LaTeX Warning: Reference `sec:perancangan_sistem' on page 21 undefined on input line 49.
+
+
+LaTeX Warning: Reference `fig:lintasan' on page 21 undefined on input line 56.
+
+[21]
+
+LaTeX Warning: Reference `fig:lintasan' on page 22 undefined on input line 62.
+
+) [22] (./sections/05-kesimpulan-saran.tex) [23]
 Overfull \hbox (9.8243pt too wide) in paragraph at lines 87--87
 \OT1/ptm/m/n/12 (-20) or Trac-king Ro-bot". In: \OT1/ptm/m/it/12 (-20) Dro-nes \OT1/ptm/m/n/12 (-20) 5.4 (2021), p. 105. \OT1/ptm/m/sc/12 (-20) doi\OT1/ptm/m/n/12 (-20) : [][]$\OT1/pcr/m/n/12 10 . 3390 / drones5040105$[][]\OT1/ptm/m/n/12 (-20) . 
  []
 
-[31] (./main.aux)
+[24] (./main.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
  ***********
-Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 524CEF0F0EC09C937311F28C8D323BF3;5020.
+
+
+LaTeX Warning: There were undefined references.
+
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
+
+Package rerunfilecheck Warning: File `main.out' has changed.
+(rerunfilecheck)                Rerun to get outlines right
+(rerunfilecheck)                or use package `bookmark'.
+
+Package rerunfilecheck Info: Checksums for `main.out':
+(rerunfilecheck)             Before: <no file>
+(rerunfilecheck)             After:  1C629E28BE234728E585B918AD96A3DE;4196.
+
+Package biblatex Warning: Please (re)run Biber on the file:
+(biblatex)                main
+(biblatex)                and rerun LaTeX afterwards.
+
 Package logreq Info: Writing requests to 'main.run.xml'.
 \openout1 = `main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 26660 strings out of 467525
- 450152 string characters out of 5423210
- 1762170 words of memory out of 5000000
- 54243 multiletter control sequences out of 15000+600000
- 663142 words of font info for 267 fonts, out of 8000000 for 9000
+ 26258 strings out of 467525
+ 445458 string characters out of 5423210
+ 1775968 words of memory out of 5000000
+ 54144 multiletter control sequences out of 15000+600000
+ 660850 words of font info for 239 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  68i,9n,70p,1095b,2236s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><c:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><c:/texlive/2026/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb><c:/texlive/2026/texmf-dist/fonts/type1/urw/times/utmb8a.pfb><c:/texlive/2026/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb><c:/texlive/2026/texmf-dist/fonts/type1/urw/times/utmr8a.pfb><c:/texlive/2026/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (34 pages, 600576 bytes).
+Output written on main.pdf (27 pages, 691972 bytes).
 PDF statistics:
- 1161 PDF objects out of 1200 (max. 8388607)
- 1090 compressed objects within 11 object streams
- 715 named destinations out of 1000 (max. 500000)
- 49830 words of extra memory for PDF output out of 51595 (max. 10000000)
+ 740 PDF objects out of 1000 (max. 8388607)
+ 677 compressed objects within 7 object streams
+ 464 named destinations out of 1000 (max. 500000)
+ 49680 words of extra memory for PDF output out of 51595 (max. 10000000)
 

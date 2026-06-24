@@ -140,7 +140,7 @@ The \texttt{ultrasonic\_manager.py} module interfaces with the HC-SR04 sensor to
 To ensure responsive measurements without noise:
 \begin{itemize}
     \item \textbf{Moving Average Filter:} The sensor takes 3 raw readings with a 10 ms interval. Valid readings (between 2 and 400 cm) are averaged to filter out spikes.
-    \item \textbf{Correction Factor:} A calibration factor is loaded from the external file `faktor_koreksi.txt` to scale the distance ($s_{\text{calibrated}} = s_{\text{raw}} \times f_{\text{correction}}$).
+    \item \textbf{Correction Factor:} A calibration factor is loaded from the external file \texttt{faktor\_koreksi.txt} to scale the distance ($s_{\text{calibrated}} = s_{\text{raw}} \times f_{\text{correction}}$).
     \item \textbf{Fallback Protection:} If reading fails, it returns 999 cm to prevent sudden braking.
 \end{itemize}
 

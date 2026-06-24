@@ -1,23 +1,21 @@
 \babel@toc {indonesian}{}\relax 
 \contentsline {section}{\numberline {1}Introduction}{1}{section.4}%
 \contentsline {section}{\numberline {2}Tinjauan Pustaka}{4}{section.10}%
-\contentsline {section}{\numberline {3}Perancangan Sistem}{5}{section.11}%
-\contentsline {subsection}{\numberline {3.1}Perancangan Perangkat Keras (Hardware)}{5}{subsection.12}%
-\contentsline {subsection}{\numberline {3.2}Perancangan Sistem Visual (Visual)}{6}{subsection.15}%
-\contentsline {subsubsection}{\numberline {3.2.1}Akuisisi Citra dan Manajemen Kamera (\textit {camera\_manager.py})}{6}{subsubsection.16}%
-\contentsline {subsubsection}{\numberline {3.2.2}Prapemrosesan dan Segmentasi Warna (\textit {image\_processor.py})}{8}{subsubsection.92}%
-\contentsline {subsubsection}{\numberline {3.2.3}Deteksi Kontur Objek (\textit {object\_detector.py})}{10}{subsubsection.125}%
-\contentsline {subsubsection}{\numberline {3.2.4}Estimasi Jarak Visual (\textit {distance\_estimator.py})}{11}{subsubsection.150}%
-\contentsline {subsubsection}{\numberline {3.2.5}Integrasi dan Kalibrasi Layanan (\textit {calibration\_service.py} \& \textit {stream\_service.py})}{13}{subsubsection.197}%
-\contentsline {subsection}{\numberline {3.3}Perancangan Logika Kontrol dan Navigasi (Logic)}{15}{subsection.269}%
-\contentsline {subsubsection}{\numberline {3.3.1}Pengendali Driver Motor (motor\_manager.py)}{16}{subsubsection.270}%
-\contentsline {subsubsection}{\numberline {3.3.2}Pengelola Sensor Jarak Ultrasonik (ultrasonic\_manager.py)}{18}{subsubsection.357}%
-\contentsline {subsubsection}{\numberline {3.3.3}Algoritma Kontrol PID dan Logika Navigasi Utama (navigator.py)}{20}{subsubsection.428}%
-\contentsline {paragraph}{Algoritma Kendali PID (Proportional-Integral-Derivative)}{21}{section*.429}%
-\contentsline {paragraph}{Arsitektur Finite State Machine (FSM) Sekuensial}{21}{section*.434}%
-\contentsline {section}{\numberline {4}Pengujian dan Hasil Pembahasan}{29}{section.659}%
-\contentsline {subsection}{\numberline {4.1}Pengujian Akurasi Sensor Jarak}{29}{subsection.660}%
-\contentsline {subsection}{\numberline {4.2}Analisis Pengujian Navigasi}{29}{subsection.662}%
-\contentsline {section}{\numberline {5}Kesimpulan dan Saran}{30}{section.663}%
-\contentsline {subsection}{\numberline {5.1}Kesimpulan}{30}{subsection.664}%
-\contentsline {subsection}{\numberline {5.2}Saran}{30}{subsection.668}%
+\contentsline {section}{\numberline {3}System Design}{5}{section.11}%
+\contentsline {subsection}{\numberline {3.1}Hardware Architecture}{5}{subsection.12}%
+\contentsline {subsection}{\numberline {3.2}Computer Vision System (Visual)}{6}{subsection.15}%
+\contentsline {subsection}{\numberline {3.3}Control Logic and Navigation (Logic)}{6}{subsection.18}%
+\contentsline {subsubsection}{\numberline {3.3.1}Motor Driver Controller (motor\_manager.py)}{6}{subsubsection.19}%
+\contentsline {subsubsection}{\numberline {3.3.2}Ultrasonic Sensor Manager (ultrasonic\_manager.py)}{9}{subsubsection.106}%
+\contentsline {subsubsection}{\numberline {3.3.3}PID Control Algorithm and Main Navigation (navigator.py)}{11}{subsubsection.177}%
+\contentsline {paragraph}{PID Control Algorithm}{11}{section*.178}%
+\contentsline {paragraph}{Sequential Finite State Machine (FSM) Architecture}{11}{section*.183}%
+\contentsline {section}{\numberline {4}Experimental Results and Discussion}{19}{section.408}%
+\contentsline {subsection}{\numberline {4.1}DC Motor Speed Calibration and Path Alignment}{19}{subsection.409}%
+\contentsline {subsection}{\numberline {4.2}Ultrasonic Sensor Accuracy and Fluctuation Testing}{19}{subsection.410}%
+\contentsline {subsection}{\numberline {4.3}Sequential Navigation Performance Analysis on the Track}{20}{subsection.412}%
+\contentsline {subsection}{\numberline {4.4}Obstacle Evasion and Physical Track Boundary Challenges}{21}{subsection.414}%
+\contentsline {subsection}{\numberline {4.5}Webcam Color Stability and Exposure Constraints}{22}{subsection.418}%
+\contentsline {section}{\numberline {5}Kesimpulan dan Saran}{23}{section.419}%
+\contentsline {subsection}{\numberline {5.1}Kesimpulan}{23}{subsection.420}%
+\contentsline {subsection}{\numberline {5.2}Saran}{23}{subsection.424}%
