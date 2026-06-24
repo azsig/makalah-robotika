@@ -1,6 +1,6 @@
-\babel@toc {indonesian}{}\relax 
+\babel@toc {english}{}\relax 
 \contentsline {section}{\numberline {1}Introduction}{1}{section.4}%
-\contentsline {section}{\numberline {2}Tinjauan Pustaka}{4}{section.10}%
+\contentsline {section}{\numberline {2}Literature Review}{4}{section.10}%
 \contentsline {section}{\numberline {3}System Design}{5}{section.11}%
 \contentsline {subsection}{\numberline {3.1}Hardware Architecture}{5}{subsection.12}%
 \contentsline {subsection}{\numberline {3.2}Computer Vision System (Visual)}{6}{subsection.15}%
@@ -16,6 +16,6 @@
 \contentsline {subsection}{\numberline {4.3}Sequential Navigation Performance Analysis on the Track}{20}{subsection.412}%
 \contentsline {subsection}{\numberline {4.4}Obstacle Evasion and Physical Track Boundary Challenges}{21}{subsection.414}%
 \contentsline {subsection}{\numberline {4.5}Webcam Color Stability and Exposure Constraints}{21}{subsection.418}%
-\contentsline {section}{\numberline {5}Kesimpulan dan Saran}{22}{section.419}%
-\contentsline {subsection}{\numberline {5.1}Kesimpulan}{22}{subsection.420}%
-\contentsline {subsection}{\numberline {5.2}Saran}{22}{subsection.424}%
+\contentsline {section}{\numberline {5}Conclusion and Recommendations}{22}{section.419}%
+\contentsline {subsection}{\numberline {5.1}Conclusion}{22}{subsection.420}%
+\contentsline {subsection}{\numberline {5.2}Recommendations}{22}{subsection.424}%
