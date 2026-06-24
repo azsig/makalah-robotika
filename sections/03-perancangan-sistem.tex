@@ -4,22 +4,51 @@
 This chapter describes the comprehensive robotic system design architecture, which is divided into hardware configuration, computer vision subsystem, and navigation control logic.
 
 \subsection{Hardware Architecture}
-The robot is designed based on a Raspberry Pi Single Board Computer (SBC) as the central processing unit. The hardware configuration consists of a mechanical chassis, DC drive motors controlled by an L298N driver, an HC-SR04 ultrasonic distance sensor for close-range obstacle detection, and a USB webcam as the primary visual sensor. The block diagram of the hardware system is shown in Figure~\ref{fig:block_diagram}.
+\label{subsec:hardware_architecture}
+
+The hardware architecture of the autonomous color-tracking robot is designed as an integrated embedded robotic platform. Conceptually, this system is divided into four main functional blocks: the processing and control unit, the sensing system, the actuation mechanism, and the power distribution topology. The data flow, control signals, and power distribution among these functional blocks are represented by the high-level architecture diagram in Figure \ref{fig:diagram_hardware}.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{block_diagram.jpg}
-    \caption{Robotic Hardware Architecture Block Diagram.}
-    \label{fig:block_diagram}
+    % Ensure the file name matches your repository
+    \includegraphics[width=0.8\textwidth]{nama_file_diagram.png} 
+    \caption{Block diagram of the hardware architecture and control signal flow.}
+    \label{fig:diagram_hardware}
 \end{figure}
 
-Documentation of the assembled robot is placed in Figure~\ref{fig:foto_robot}. The image file should be stored inside the \texttt{figures/} directory.
+\subsubsection{Processing and Control Unit}
+The core computational and control operations of the entire system rely on a Raspberry Pi 3 Model B Single-Board Computer (SBC). The use of this SBC is essential to provide the considerable computational resources required to execute the OpenCV-based image processing algorithms and bounding-box generation without relying on external computing. The Raspberry Pi acts as the main processing and control unit that reads the continuous visual data stream, processes the navigation decision logic, and translates these calculations into Pulse Width Modulation (PWM) control signals. These signals are subsequently distributed through the General Purpose Input/Output (GPIO) pins to dictate the responses of the actuation system.
+
+\subsubsection{Sensing System}
+The robot's ability to perceive its surroundings and gather environmental information is realized through the integration of two distinct sensing technologies:
+\begin{itemize}
+    \item \textbf{Monocular Camera (1080p USB Webcam):} Serving as the primary visual sensor, the webcam captures light reflections from objects and converts them into RGB pixel matrices. These raw data matrices are streamed to the processing unit to be transformed into the HSV color space. This mapping is fundamental for the vision-based system, as it separates pure chromatic information (Hue) from environmental illumination intensity (Value). This enhances the robustness of the HSV-based segmentation, allowing the robot to identify the color-defined target and extract bounding boxes even under varying lighting conditions.
+    \item \textbf{Ultrasonic Sensor (HC-SR04):} Operating based on the Time-of-Flight (ToF) principle of mechanical waves, this sensor emits 40 kHz ultrasonic pulses and calculates the time elapsed until the echo is received. It is implemented as a frontal distance sensor to provide direct physical distance measurements and support reactive collision-avoidance decisions. If a frontal obstacle is detected within a critical proximity, the sensor input triggers an interrupt in the main control logic to immediately halt traction, preventing physical collisions when the visual sensor is occluded or experiences response latency.
+\end{itemize}
+
+\subsubsection{Actuation and Kinematic Control}
+The conversion of electrical control signals into mechanical torque is managed by a differential drive configuration, suitable for a two-wheeled mobile robot.
+\begin{itemize}
+    \item \textbf{L298N Motor Driver Circuit:} This module functions as a power interface bridge between the Raspberry Pi's low-voltage GPIO pins (3.3V) and the inductive load of the motors, which demands high current supply. Operating on a Dual H-Bridge circuit topology, the L298N allows dynamic voltage polarity reversal to control the direction of motion, while simultaneously switching the PWM signals from the processing unit to regulate the duty cycle (rotational speed).
+    \item \textbf{Direct Current (DC) Motors:} The final motion execution relies on two DC motors coupled to the left and right wheels of the chassis. By asynchronously varying the rotational speed distribution between the two wheels, the robot can perform skid-steering to smoothly execute required motion commands, including moving forward, turning left, turning right, stopping, and performing obstacle-avoidance maneuvers.
+\end{itemize}
+
+\subsubsection{Power Distribution Topology}
+The computational stability of the embedded platform heavily depends on the implemented power supply scheme. Because DC motors are inductive loads—prone to generating inrush currents upon starting and back-Electromotive Force (back-EMF)—the system employs a split power supply topology with an integrated common ground.
+\begin{itemize}
+    \item \textbf{Logic Power Supply:} The Raspberry Pi is exclusively powered by a closed power source (5V/3A Powerbank). Isolating this current source is crucial to maintain computational voltage stability and prevent transient voltage drops that could reset the operating system kernel when the actuators operate at maximum capacity.
+    \item \textbf{Mechanical Load Power Supply:} The L298N driver circuit and the DC motors receive power from a series configuration of two 18650 Lithium-ion batteries. The 7.4V nominal voltage from this array is injected directly into the driver's input terminals. Although the power sources are physically separated, the ground terminals (GND) of the 18650 battery circuit and the Raspberry Pi's GPIO are strictly unified. This common ground ensures that all PWM control pulses share a uniform zero-equipotential reference, guaranteeing that the operational logic is translated precisely without noise interference.
+\end{itemize}
+
+\vspace{1em}
+The physical implementation of these integrated hardware components on the mechanical chassis is shown in Figure \ref{fig:fisik_robot}. This concrete integration of functional blocks ultimately enables the mobile robot to acquire actual environmental parameters, execute lightweight object-detection methods, and perform precise kinematic maneuvers.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.6\textwidth]{gambar_robot.jpg}
-    \caption{Physical Assembly of the Mobile Robot.}
-    \label{fig:foto_robot}
+    % Ensure the file name matches your repository
+    \includegraphics[width=0.7\textwidth]{nama_file_robot.jpg} 
+    \caption{Physical hardware implementation on the autonomous color-tracking robot chassis.}
+    \label{fig:fisik_robot}
 \end{figure}
 
 \subsection{Computer Vision System (Visual)}
