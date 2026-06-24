@@ -23,7 +23,7 @@ Documentation of the assembled robot is placed in Figure~\ref{fig:foto_robot}. T
 \end{figure}
 
 \subsection{Computer Vision System (Visual)}
-The computer vision subsystem processes digital image frames captured by the front-facing USB webcam in real time. The camera stream is processed by a separate computer vision module running as a local Flask web server API at the URL \texttt{http://127.0.0.1:5000/api/objects}.
+The computer vision subsystem processes digital image frames captured by the front-facing USB webcam in real time. The camera stream is processed by a separate computer vision module running as a local Flask web server API at the URL \url{http://127.0.0.1:5000/api/objects}.
 
 The Flask API extracts frames, performs color segmentation, and categorizes detected contours into two main labels:
 \begin{enumerate}
@@ -34,15 +34,15 @@ The Flask API extracts frames, performs color segmentation, and categorizes dete
 The vision data is returned in JSON format containing bounding box coordinates. The primary parameters used by the navigation loop are the horizontal center coordinate ($x_{\text{objek}}$) to determine deviation, and the width ($w$) and height ($h$) to calculate the bounding box area ($A = w \times h$) as a visual estimate of distance.
 
 \subsection{Control Logic and Navigation (Logic)}
-The control logic represents the decision-making core running on the Raspberry Pi. The navigation software is implemented in Python 3 with a modular design consisting of three primary scripts: \texttt{motor\_manager.py}, \texttt{ultrasonic\_manager.py}, and \texttt{navigator.py}.
+The control logic represents the decision-making core running on the Raspberry Pi. The navigation software is implemented in Python 3 with a modular design consisting of three primary scripts: \texttt{motor\_}\allowbreak\texttt{manager.py}, \texttt{ultrasonic\_}\allowbreak\texttt{manager.py}, and \texttt{navigator.py}.
 
 \subsubsection{Motor Driver Controller (motor\_manager.py)}
-The \texttt{motor\_manager.py} module controls the direction and speed of the DC motors using Pulse Width Modulation (PWM) signals from the Raspberry Pi GPIO pins to the L298N driver. The code is shown in Listing~\ref{lst:motor_manager}.
+The \texttt{motor\_}\allowbreak\texttt{manager.py} module controls the direction and speed of the DC motors using Pulse Width Modulation (PWM) signals from the Raspberry Pi GPIO pins to the L298N driver. The code is shown in Listing~\ref{lst:motor_manager}.
 
 Key control aspects include:
 \begin{itemize}
-    \item \textbf{Wheel Speed Calibration (\textit{Left Bias}):} To compensate for physical DC motor imbalances, a left-wheel speed multiplier (\texttt{left\_bias}) of $1.14$ is applied during initialization in the navigator script to keep the robot moving straight.
-    \item \textbf{Proportional Speed Limiting:} Motor speed commands range from $-255$ to $255$. If speed exceeds \texttt{max\_speed\_limit} (set to 180), speed values are scaled proportionally to maintain the steering ratio.
+    \item \textbf{Wheel Speed Calibration (\textit{Left Bias}):} To compensate for physical DC motor imbalances, a left-wheel speed multiplier (\texttt{left\_}\allowbreak\texttt{bias}) of $1.14$ is applied during initialization in the navigator script to keep the robot moving straight.
+    \item \textbf{Proportional Speed Limiting:} Motor speed commands range from $-255$ to $255$. If speed exceeds \texttt{max\_}\allowbreak\texttt{speed\_}\allowbreak\texttt{limit} (set to 180), speed values are scaled proportionally to maintain the steering ratio.
     \item \textbf{Minimum Torque Threshold:} To overcome static friction, active motor speeds are clamped to a minimum magnitude of $\pm 90$.
 \end{itemize}
 
@@ -135,12 +135,12 @@ class MotorManager:
 \end{lstlisting}
 
 \subsubsection{Ultrasonic Sensor Manager (ultrasonic\_manager.py)}
-The \texttt{ultrasonic\_manager.py} module interfaces with the HC-SR04 sensor to read physical distance. The code is shown in Listing~\ref{lst:ultrasonic_manager}.
+The \texttt{ultrasonic\_}\allowbreak\texttt{manager.py} module interfaces with the HC-SR04 sensor to read physical distance. The code is shown in Listing~\ref{lst:ultrasonic_manager}.
 
 To ensure responsive measurements without noise:
 \begin{itemize}
     \item \textbf{Moving Average Filter:} The sensor takes 3 raw readings with a 10 ms interval. Valid readings (between 2 and 400 cm) are averaged to filter out spikes.
-    \item \textbf{Correction Factor:} A calibration factor is loaded from the external file \texttt{faktor\_koreksi.txt} to scale the distance ($s_{\text{calibrated}} = s_{\text{raw}} \times f_{\text{correction}}$).
+    \item \textbf{Correction Factor:} A calibration factor is loaded from the external file \texttt{faktor\_}\allowbreak\texttt{koreksi.txt} to scale the distance ($s_{\text{calibrated}} = s_{\text{raw}} \times f_{\text{correction}}$).
     \item \textbf{Fallback Protection:} If reading fails, it returns 999 cm to prevent sudden braking.
 \end{itemize}
 
@@ -247,14 +247,14 @@ The navigation loop operates as a sequential Finite State Machine:
     \begin{itemize}
         \item If $s \le 15$ cm, the robot stops.
         \item It checks if the target area is $> 10,000$ pixels and distance $\le 12$ cm. If so, it enters the \textbf{Finish} state and stops the program.
-        \item Otherwise, it backs up at \texttt{-V\_SLOW} for 0.5s, pauses for 0.2s, and turns for 0.3s away from the obstacle based on the memory variable \texttt{last\_known\_target\_direction}.
+        \item Otherwise, it backs up at \texttt{-V\_SLOW} for 0.5s, pauses for 0.2s, and turns for 0.3s away from the obstacle based on the memory variable \texttt{last\_}\allowbreak\texttt{known\_}\allowbreak\texttt{target\_}\allowbreak\texttt{direction}.
     \end{itemize}
     
     \item \textbf{State 2: Frame Stabilization and Image Acquisition:} If the path is clear, the robot pauses for 0.1s to avoid motion blur, fetches object coordinates from the Flask API, and identifies targets (area $> 600$) and obstacles (area $> 2000$).
     
     \item \textbf{State 3: Motion Execution:}
     \begin{itemize}
-        \item \textbf{Priority 1 (Target Pursuit):} If the target is detected, it drives toward it using PID steering and stores the direction in \texttt{last\_known\_target\_direction} for 0.25s.
+        \item \textbf{Priority 1 (Target Pursuit):} If the target is detected, it drives toward it using PID steering and stores the direction in \texttt{last\_}\allowbreak\texttt{known\_}\allowbreak\texttt{target\_}\allowbreak\texttt{direction} for 0.25s.
         \item \textbf{Priority 2 (Visual Obstacle Avoidance):} If target is absent but an obstacle is in the center ($160 \pm 75$ px), it steers away for 0.25s.
         \item \textbf{Priority 3 (Memory-based Target Search):} If no objects are visible, it turns in the direction of the last known target for 0.2s. If no direction is stored, it stops.
     \end{itemize}

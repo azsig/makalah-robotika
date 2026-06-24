@@ -15,7 +15,7 @@
 \contentsline {subsection}{\numberline {4.2}Ultrasonic Sensor Accuracy and Fluctuation Testing}{19}{subsection.410}%
 \contentsline {subsection}{\numberline {4.3}Sequential Navigation Performance Analysis on the Track}{20}{subsection.412}%
 \contentsline {subsection}{\numberline {4.4}Obstacle Evasion and Physical Track Boundary Challenges}{21}{subsection.414}%
-\contentsline {subsection}{\numberline {4.5}Webcam Color Stability and Exposure Constraints}{22}{subsection.418}%
-\contentsline {section}{\numberline {5}Kesimpulan dan Saran}{23}{section.419}%
-\contentsline {subsection}{\numberline {5.1}Kesimpulan}{23}{subsection.420}%
-\contentsline {subsection}{\numberline {5.2}Saran}{23}{subsection.424}%
+\contentsline {subsection}{\numberline {4.5}Webcam Color Stability and Exposure Constraints}{21}{subsection.418}%
+\contentsline {section}{\numberline {5}Kesimpulan dan Saran}{22}{section.419}%
+\contentsline {subsection}{\numberline {5.1}Kesimpulan}{22}{subsection.420}%
+\contentsline {subsection}{\numberline {5.2}Saran}{22}{subsection.424}%

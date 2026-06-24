@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.9.28)  22 JUN 2026 14:47
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.9.28)  24 JUN 2026 21:03
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -927,12 +927,12 @@ Dictionary: translator-numbers-dictionary, Language: English
 tionary-English.dict
 Dictionary: translator-theorem-dictionary, Language: English 
 ) (./slides.nav)
-Overfull \hbox (14.41046pt too wide) in paragraph at lines 56--56
+Overfull \hbox (49.1712pt too wide) in paragraph at lines 56--56
  [][]  \OT1/cmss/m/n/6 ([])  
  []
 
 
-Overfull \hbox (14.41046pt too wide) in paragraph at lines 61--61
+Overfull \hbox (49.1712pt too wide) in paragraph at lines 61--61
  [][]  \OT1/cmss/m/n/6 ([])  
  []
 
@@ -954,93 +954,98 @@ ut line 61.
 File: ot1mathkerncmss.fd 2020/01/31 Fontinst v1.933 font definitions for OT1/ma
 thkerncmss.
 )
+Overfull \hbox (79.46869pt too wide) in paragraph at lines 61--61
+ [][]  
+ []
 
 
-Overfull \hbox (14.41046pt too wide) has occurred while \output is active
+
+
+Overfull \hbox (49.1712pt too wide) has occurred while \output is active
  [][]  \OT1/cmss/m/n/6 ([])  
  []
 
 [1
 
 {/usr/local/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
-Overfull \hbox (14.41046pt too wide) in paragraph at lines 74--74
+Overfull \hbox (49.1712pt too wide) in paragraph at lines 74--74
  [][]  \OT1/cmss/m/n/6 ([])  
  []
 
 
 
 
-Overfull \hbox (14.41046pt too wide) has occurred while \output is active
+Overfull \hbox (49.1712pt too wide) has occurred while \output is active
  [][]  \OT1/cmss/m/n/6 ([])  
  []
 
 [2
 
 ]
-Overfull \hbox (14.41046pt too wide) in paragraph at lines 95--95
+Overfull \hbox (49.1712pt too wide) in paragraph at lines 95--95
  [][]  \OT1/cmss/m/n/6 ([])  
  []
 
 
 
 
-Overfull \hbox (14.41046pt too wide) has occurred while \output is active
+Overfull \hbox (49.1712pt too wide) has occurred while \output is active
  [][]  \OT1/cmss/m/n/6 ([])  
  []
 
 [3
 
 ]
-Overfull \hbox (14.41046pt too wide) in paragraph at lines 107--107
+Overfull \hbox (49.1712pt too wide) in paragraph at lines 107--107
  [][]  \OT1/cmss/m/n/6 ([])  
  []
 
 
 
 
-Overfull \hbox (14.41046pt too wide) has occurred while \output is active
+Overfull \hbox (49.1712pt too wide) has occurred while \output is active
  [][]  \OT1/cmss/m/n/6 ([])  
  []
 
 [4
 
 ]
-Overfull \hbox (14.41046pt too wide) in paragraph at lines 126--126
+Overfull \hbox (49.1712pt too wide) in paragraph at lines 126--126
  [][]  \OT1/cmss/m/n/6 ([])  
  []
 
 
 
 
-Overfull \hbox (14.41046pt too wide) has occurred while \output is active
+Overfull \hbox (49.1712pt too wide) has occurred while \output is active
  [][]  \OT1/cmss/m/n/6 ([])  
  []
 
 [5
 
 ]
-Overfull \hbox (14.41046pt too wide) in paragraph at lines 141--141
+Overfull \hbox (49.1712pt too wide) in paragraph at lines 141--141
  [][]  \OT1/cmss/m/n/6 ([])  
  []
 
 
 
 
-Overfull \hbox (14.41046pt too wide) has occurred while \output is active
+Overfull \hbox (49.1712pt too wide) has occurred while \output is active
  [][]  \OT1/cmss/m/n/6 ([])  
  []
 
 [6
 
 ]
-Overfull \hbox (14.41046pt too wide) in paragraph at lines 148--148
+Overfull \hbox (49.1712pt too wide) in paragraph at lines 148--148
  [][]  \OT1/cmss/m/n/6 ([])  
  []
 
 
 
 
-Overfull \hbox (14.41046pt too wide) has occurred while \output is active
+Overfull \hbox (49.1712pt too wide) has occurred while \output is active
  [][]  \OT1/cmss/m/n/6 ([])  
  []
 
@@ -1065,10 +1070,10 @@ Package rerunfilecheck Info: File `slides.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
  ) 
 Here is how much of TeX's memory you used:
- 22981 strings out of 467748
- 446386 string characters out of 5426965
- 834137 words of memory out of 5000000
- 51184 multiletter control sequences out of 15000+600000
+ 22983 strings out of 467748
+ 446404 string characters out of 5426965
+ 834226 words of memory out of 5000000
+ 51186 multiletter control sequences out of 15000+600000
  640578 words of font info for 86 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  128i,15n,123p,381b,736s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -1079,7 +1084,7 @@ Here is how much of TeX's memory you used:
 sr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmssbx10.pfb></
 usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmssi10.pfb></
 usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
-Output written on slides.pdf (7 pages, 111820 bytes).
+Output written on slides.pdf (7 pages, 112704 bytes).
 PDF statistics:
  316 PDF objects out of 1000 (max. 8388607)
  243 compressed objects within 3 object streams
